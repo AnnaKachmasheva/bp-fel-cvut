@@ -1,0 +1,9 @@
+User:
+  description: test
+  value:
+    id: 3236
+    email: "mikefg@gmail.com"
+    userRole: "USER"
+    firstName: "Mike"
+    lastName: "Smith"
+    isDeleted: false

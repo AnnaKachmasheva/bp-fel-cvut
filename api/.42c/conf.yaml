@@ -1,0 +1,3 @@
+apis:
+  src/main/resources/bp_api.yaml:
+    alias: "bp-api"

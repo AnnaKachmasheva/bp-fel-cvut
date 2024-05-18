@@ -1,0 +1,68 @@
+.libraryContainer {
+  padding: 10px;
+  margin: 20px 20px 0 0;
+  text-align: center;
+  background: #1c7743;
+  color: white;
+  cursor: pointer;
+  height: 40px;
+  width: 90%;
+
+  border-radius: 6px;
+
+  li {
+    height: 100%;
+  }
+}
+
+.libraryContainer:hover {
+  background: #176739;
+
+  li {
+    color: white;
+  }
+}
+
+h4 {
+  margin: 10px;
+  font-weight: normal;
+}
+
+.scanContainer {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: black;
+
+  > section {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+
+  }
+
+  .qrReader {
+    width: 90vw;
+    height: 100%;
+    margin-top: -10vh;
+
+    > div {
+
+      video {
+        //border: 2px solid green;
+      }
+    }
+  }
+
+  .Button {
+    position: fixed;
+    margin-top: 80vh;
+    width: 90vw;
+  }
+}
+

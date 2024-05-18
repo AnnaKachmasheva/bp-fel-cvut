@@ -1,0 +1,8 @@
+Product:
+  description: test
+  value:
+    - id: 124
+      name: "table old"
+      status: "IN_STOCK"
+      isDeleted: true
+      description: "-"

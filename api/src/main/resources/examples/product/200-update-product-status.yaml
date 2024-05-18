@@ -1,0 +1,4 @@
+ProductStatus:
+  description: test
+  value:
+    - status: "IN_STOCK"

@@ -1,0 +1,61 @@
+@import '../../././colors.scss';
+
+.container {
+  display: flex;
+  justify-content: center;
+
+  flex-wrap: wrap;
+  gap: 20px;
+
+  padding: 100px 0;
+
+  .card {
+    height: 20vh;
+    width: 20vw;
+    padding: 20px;
+
+    display: grid;
+
+    border-radius: 6px;
+    border: 1px solid $grey-color;
+    box-shadow: 0 0 6px $grey-color;
+
+    p {
+      align-self: flex-end;
+      text-align: center;
+      font-size: 4vh;
+      margin: 0;
+
+      color: $green-color;
+    }
+
+    span {
+      text-align: center;
+      font-size: 3vh;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+
+  .container {
+
+    width: 100vw;
+    margin: 0;
+    padding-top: 100px;
+
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .card {
+      width: 90vw;
+
+      padding: 0;
+      margin: 0;
+    }
+
+  }
+
+}

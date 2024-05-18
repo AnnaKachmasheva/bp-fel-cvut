@@ -1,0 +1,8 @@
+User:
+  description: test
+  value:
+    id: 3236
+    email: "oldmike@gmail.com"
+    userRole: "ADMIN"
+    firstName: "John"
+    lastName: "Smith"

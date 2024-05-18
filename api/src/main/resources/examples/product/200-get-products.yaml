@@ -1,0 +1,18 @@
+Products:
+  description: test
+  value:
+    - id: 124
+      name: "table"
+      status: "IN_STOCK"
+      isDeleted: false
+      description: "-"
+    - id: 345
+      name: "book"
+      status: "PENDING_DELIVERY"
+      isDeleted: false
+      description: "-"
+    - id: 64657
+      name: "sheet"
+      status: "DELIVERED"
+      isDeleted: true
+      description: "-"

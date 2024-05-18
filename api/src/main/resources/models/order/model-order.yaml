@@ -1,0 +1,30 @@
+Order:
+  type: object
+  required:
+    - id
+    - product
+    - creator
+    - acceptor
+    - isDeleted
+  properties:
+    id:
+      type: string
+      format: uuid
+    product:
+      type: array
+      items:
+        $ref: '../product/model-product.yaml#/Product'
+    creator:
+      $ref: '../user/model-user.yaml#/User'
+    acceptor:
+        $ref: '../user/model-user.yaml#/User'
+    isDeleted:
+      type: boolean
+    description:
+      type: string
+    createdAt:
+      type: string
+    updatedAt:
+      type: string
+    status:
+      $ref: "../product/product-status.yaml#/Status"

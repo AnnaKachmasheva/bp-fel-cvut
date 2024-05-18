@@ -1,0 +1,11 @@
+NewOrder:
+  type: object
+  required:
+    - product
+  properties:
+    productList:
+      type: array
+      items:
+        $ref: '../product/model-product.yaml#/Product'
+    description:
+      type: string

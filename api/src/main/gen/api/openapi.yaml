@@ -1,0 +1,400 @@
+openapi: 3.0.1
+info:
+  description: Inventory management system API
+  title: BP API
+  version: 1.0.0
+servers:
+- url: http://api/v1/
+paths:
+  /auth/registration:
+    post:
+      description: Registration new user
+      operationId: registration
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Registration:
+                $ref: '#/components/examples/Registration'
+            schema:
+              $ref: '#/components/schemas/Registration'
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: User already exists
+      tags:
+      - r
+      x-content-type: application/json
+      x-accepts: application/json
+  /auth/login:
+    post:
+      description: Log in
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            examples:
+              LogIn200:
+                $ref: '#/components/examples/LogIn'
+            schema:
+              $ref: '#/components/schemas/LogIn'
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                LoginToken:
+                  $ref: '#/components/examples/LoginToken'
+              schema:
+                $ref: '#/components/schemas/LoginToken'
+          description: OK
+        "401":
+          description: Invalid email or password
+        "404":
+          description: User not found by email
+      tags:
+      - er
+      x-content-type: application/json
+      x-accepts: application/json
+  /auth/logout:
+    post:
+      description: Log out
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              nullable: true
+              type: object
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: User was not logged in
+      tags:
+      - User
+      x-content-type: application/json
+      x-accepts: application/json
+  /user/{userId}:
+    delete:
+      description: Delete user
+      operationId: deleteUserBy
+      parameters:
+      - description: Unique user id
+        explode: false
+        in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: User not found
+      tags:
+      - User
+      x-accepts: application/json
+    get:
+      description: Get user by id
+      operationId: getUserById
+      parameters:
+      - description: Unique user id
+        explode: false
+        in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                User:
+                  $ref: '#/components/examples/User'
+              schema:
+                $ref: '#/components/schemas/User'
+          description: OK
+        "404":
+          description: User not found
+      tags:
+      - User
+      x-accepts: application/json
+    put:
+      description: Update user
+      operationId: updateUser
+      parameters:
+      - description: Unique user id
+        explode: false
+        in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            examples:
+              User:
+                $ref: '#/components/examples/User'
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                User:
+                  $ref: '#/components/examples/User'
+              schema:
+                $ref: '#/components/schemas/User'
+          description: OK
+        "404":
+          description: User not found
+      tags:
+      - User
+      x-content-type: application/json
+      x-accepts: application/json
+  /users:
+    get:
+      description: Get users
+      operationId: getUsersBy
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                User:
+                  $ref: '#/components/examples/Users'
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: OK
+      tags:
+      - User
+      x-accepts: application/json
+    post:
+      description: Create new user
+      operationId: createUserBy
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Registration:
+                $ref: '#/components/examples/NewUserRequest'
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                User:
+                  $ref: '#/components/examples/NewUserResponse'
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: OK
+        "404":
+          description: User already exists
+      tags:
+      - User
+      x-content-type: application/json
+      x-accepts: application/json
+components:
+  examples:
+    Registration:
+      description: test
+      value:
+        email: mikefg@gmail.com
+        password: "p]pdsafd%S"
+        firstName: Mike
+        lastName: Smith
+    LogIn:
+      description: test
+      value:
+        email: kmjohn@gmail.com
+        password: pasrr34%FG12
+    LoginToken:
+      description: test
+      value:
+        email: kmjohn@gmail.com
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+    User:
+      description: test
+      value:
+        id: 3236
+        email: mikefg@gmail.com
+        userRole: USER
+        firstName: Mike
+        lastName: Smith
+    Users:
+      description: test
+      value:
+      - id: 3236
+        email: mikefg@gmail.com
+        userRole: USER
+        firstName: Mike
+        lastName: Smith
+      - id: 3237
+        email: john@gmail.com
+        userRole: ADMIN
+        firstName: Jane
+        lastName: Smith
+    NewUserRequest:
+      description: test
+      value:
+        email: mikefg@gmail.com
+        userRole: USER
+        password: "p]pdsafd%S"
+        firstName: Mike
+        lastName: Smith
+    NewUserResponse:
+      description: test
+      value:
+        id: 4244
+        email: mikefg@gmail.com
+        userRole: USER
+        firstName: Mike
+        lastName: Smith
+  schemas:
+    Registration:
+      example:
+        firstName: firstName
+        lastName: lastName
+        password: password
+        email: email
+      properties:
+        email:
+          pattern: "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"\
+            (?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\\
+            [\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\\
+            .)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\\
+            .){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\\
+            x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\\
+            x0b\\x0c\\x0e-\\x7f])+)\\])"
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        password:
+          type: string
+      required:
+      - email
+      - password
+      type: object
+    LogIn:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          pattern: "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"\
+            (?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\\
+            [\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\\
+            .)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\\
+            .){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\\
+            x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\\
+            x0b\\x0c\\x0e-\\x7f])+)\\])"
+          type: string
+        password:
+          type: string
+      required:
+      - email
+      - password
+      type: object
+    LoginToken:
+      example:
+        email: email
+        token: token
+      properties:
+        email:
+          pattern: "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"\
+            (?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\\
+            [\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\\
+            .)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\\
+            .){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\\
+            x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\\
+            x0b\\x0c\\x0e-\\x7f])+)\\])"
+          type: string
+        token:
+          type: string
+      required:
+      - email
+      - token
+      type: object
+    User:
+      example:
+        firstName: firstName
+        lastName: lastName
+        id: 0
+        userRole: null
+        email: email
+      properties:
+        id:
+          format: int64
+          type: integer
+        email:
+          pattern: "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"\
+            (?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\\
+            [\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\\
+            .)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\\
+            .){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\\
+            x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\\
+            x0b\\x0c\\x0e-\\x7f])+)\\])"
+          type: string
+        userRole:
+          $ref: '#/components/schemas/UserRole'
+        firstName:
+          type: string
+        lastName:
+          type: string
+      required:
+      - email
+      - id
+      - userRole
+      type: object
+    NewUser:
+      example:
+        firstName: firstName
+        lastName: lastName
+        password: 0
+        userRole: null
+        email: email
+      properties:
+        email:
+          pattern: "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"\
+            (?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\\
+            [\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\\
+            .)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\\
+            .){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\\
+            x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\\
+            x0b\\x0c\\x0e-\\x7f])+)\\])"
+          type: string
+        userRole:
+          $ref: '#/components/schemas/UserRole'
+        password:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+      required:
+      - email
+      - password
+      - userRole
+      type: object
+    UserRole:
+      enum:
+      - USER
+      - ADMIN
+      type: string
+

@@ -1,0 +1,25 @@
+NewProduct:
+  type: object
+  required:
+    - name
+    - category
+    - status
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+    category:
+      $ref: "../category/model-category.yaml#/Category"
+    status:
+      $ref: "product-status.yaml#/Status"
+    images:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+          data:
+            format: binary
+            description: Base64 encoded image data

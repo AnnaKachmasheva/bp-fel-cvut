@@ -1,0 +1,14 @@
+Order:
+  description: test
+  value:
+    - productId: 123
+      creatorId: 456
+      acceptorId: 789
+      isDeleted: false
+      description: '-'
+
+NewOrder:
+  description: test
+  value:
+    - productId: 123
+      description: '-'

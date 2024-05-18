@@ -1,0 +1,17 @@
+NewUserRequest:
+  description: test
+  value:
+    email: "mikefg@gmail.com"
+    userRole: "USER"
+    password: "p]pdsafd%S"
+    firstName: "Mike"
+    lastName: "Smith"
+
+NewUserResponse:
+  description: test
+  value:
+    id: 4244
+    email: "mikefg@gmail.com"
+    userRole: "USER"
+    firstName: "Mike"
+    lastName: "Smith"

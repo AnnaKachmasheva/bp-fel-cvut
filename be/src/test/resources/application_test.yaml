@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: bp_test
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show_sql: true
+  datasource:
+    user:
+      jdbcUrl: jdbc:postgresql://localhost:5432/user_db_test
+      username: admin_test
+      password: admin_test
+    product:
+      jdbcUrl: jdbc:postgresql://localhost:5433/product_db_test
+      username: admin_test
+      password: admin_test

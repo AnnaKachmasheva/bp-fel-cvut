@@ -1,0 +1,5 @@
+UserRole:
+  type: string
+  enum:
+    - ROLE_USER
+    - ROLE_ADMIN

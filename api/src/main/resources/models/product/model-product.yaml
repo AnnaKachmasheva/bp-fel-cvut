@@ -1,0 +1,33 @@
+Product:
+  type: object
+  required:
+    - id
+    - name
+    - status
+    - isDeleted
+    - category
+    - createdAt
+    - updatedAt
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    status:
+      $ref: "product-status.yaml#/Status"
+    category:
+      $ref: "../category/model-category.yaml#/Category"
+    description:
+      type: string
+    isDeleted:
+      type: boolean
+    images:
+      type: array
+      items:
+        type: object
+        $ref: "model-image.yaml#/Image"
+    createdAt:
+      type: string
+    updatedAt:
+      type: string

@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: bp
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+  datasource:
+    user:
+      jdbc-url: jdbc:postgresql://localhost:5432/user_db
+      username: admin
+      password: admin
+    product:
+      jdbc-url: jdbc:postgresql://localhost:5433/product_db
+      username: admin
+      password: admin
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+server:
+  port: 8005
+  error:
+    include-message: always
+#
+#sql:
+#  init:
+#    mode: always
+#    schema-locations: classpath:/data.sql
+#    continue-on-error: true

@@ -1,0 +1,16 @@
+Image:
+  type: object
+  required:
+    - id
+    - name
+    - data
+  properties:
+    id:
+      type: string
+      format: uuid
+      readOnly: true
+    name:
+      type: string
+    data:
+      format: binary
+      description: Base64 encoded image data

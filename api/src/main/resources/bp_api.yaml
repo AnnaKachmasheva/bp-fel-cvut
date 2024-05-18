@@ -1,0 +1,651 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: BP API
+  description: Inventory management system API
+servers:
+  - url: http://localhost:8005
+    description: Generated Inventory management server URL
+tags:
+  - name: 'User'
+    description: 'Endpoints related to managing user accounts'
+  - name: 'Product'
+    description: 'Endpoints related to managing product inventory'
+  - name: 'Category'
+    description: 'Endpoints related to managing product categories.'
+  - name: 'Order'
+    description: 'Endpoints related to managing orders, including creation, retrieval, updating, and status change.'
+paths:
+  /auth/registration:
+    post:
+      tags:
+        - 'User'
+      description: 'Register a new user'
+      operationId: registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Registration'
+            examples:
+              Registration:
+                $ref: 'examples/user/200-registration.yaml#/Registration'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                LoginToken:
+                  $ref: 'examples/user/200-get-user.yaml#/User'
+          description: 'User registration successful'
+        '409':
+          description: 'User already exists'
+  /auth/login:
+    post:
+      tags:
+        - 'User'
+      description: 'Log in to the system'
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogIn'
+            examples:
+              LogIn200:
+                $ref: 'examples/user/200-login.yaml#/LogIn'
+      responses:
+        '200':
+          description: 'Login successful'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginToken'
+              examples:
+                LoginToken:
+                  $ref: 'examples/user/200-login-token.yaml#/LoginToken'
+        '401':
+          description: 'Invalid email or password'
+        '404':
+          description: 'User not found by email'
+  /me:
+    get:
+      tags:
+        - 'User'
+      description: 'Retrieve details of the currently authenticated user'
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: 'User details retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                User:
+                  $ref: 'examples/user/200-get-user.yaml#/User'
+        '404':
+          description: 'User not found'
+  /user/{userId}:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        description: Unique user ID
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - 'User'
+      description: 'Retrieve details of a specific user by their ID'
+      operationId: getUserById
+      responses:
+        '200':
+          description: 'User details retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                User:
+                  $ref: 'examples/user/200-get-user.yaml#/User'
+        '404':
+          description: 'User not found'
+    put:
+      tags:
+        - 'User'
+      description: 'Update details of a specific user by their ID'
+      operationId: updateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            examples:
+              User:
+                $ref: 'examples/user/200-update-user.yaml#/User'
+      responses:
+        '200':
+          description: 'User details updated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                User:
+                  $ref: 'examples/user/200-update-user.yaml#/User'
+        '404':
+          description: 'User not found'
+    delete:
+      tags:
+        - 'User'
+      description: 'Delete a specific user by their ID'
+      operationId: deleteUserBy
+      responses:
+        '200':
+          description: 'User deleted successfully'
+        '404':
+          description: 'User not found'
+  /user/{userId}/change-password:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        description: Unique user ID
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - 'User'
+      description: 'Change password of a specific user by their ID'
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+            examples:
+              User:
+                $ref: 'examples/user/200-change-password.yaml#/ChangePassword'
+      responses:
+        '200':
+          description: 'Password updated successfully'
+        '400':
+          description: 'Old password is invalid.'
+        '404':
+          description: 'User not found'
+  /users:
+    get:
+      tags:
+        - 'User'
+      description: 'Retrieve a list of users with pagination support'
+      operationId: getUsers
+      x-spring-paginated: true
+      responses:
+        '200':
+          description: 'User list retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+    post:
+      tags:
+        - 'User'
+      description: 'Create a new user'
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+            examples:
+              Registration:
+                $ref: 'examples/user/200-create-user.yaml#/NewUserRequest'
+      responses:
+        '200':
+          description: 'User created successfully'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                User:
+                  $ref: 'examples/user/200-create-user.yaml#/NewUserResponse'
+        '409':
+          description: 'User already exists'
+  /product/{productId}:
+    parameters:
+      - in: path
+        name: productId
+        required: true
+        description: Unique product ID
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - 'Product'
+      description: 'Retrieve details of a specific product by its ID'
+      operationId: getProductById
+      responses:
+        '200':
+          description: 'Product details retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: 'Product not found'
+    put:
+      tags:
+        - 'Product'
+      description: 'Update details of a specific product by its ID'
+      operationId: updateProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: 'Product details updated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: 'Product not found'
+    delete:
+      tags:
+        - 'Product'
+      description: 'Delete a specific product by ID'
+      operationId: deleteProductBy
+      responses:
+        '200':
+          description: 'Product deleted successfully'
+        '404':
+          description: 'Product not found'
+  /product/{productId}/status:
+    parameters:
+      - in: path
+        name: productId
+        required: true
+        description: Unique product ID
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - 'Product'
+      description: 'Update status of a specific product by its ID'
+      operationId: updateProductStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Status'
+      responses:
+        '200':
+          description: 'Product status updated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        '404':
+          description: 'Product not found'
+  /product-statuses:
+    get:
+      tags:
+        - 'Product'
+      description: 'Retrieve a list of products with pagination support'
+      operationId: getProductStatuses
+      responses:
+        '200':
+          description: 'Product statuses list retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Status'
+  /products:
+    post:
+      tags:
+        - 'Product'
+      description: 'Create a new product'
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewProduct'
+      responses:
+        '200':
+          description: 'Product create successful'
+    patch:
+      tags:
+        - 'Product'
+      description: 'Retrieve a list of products with pagination support'
+      operationId: getProducts
+      x-spring-paginated: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          description: 'Product list retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+  /products/{status}:
+    get:
+      tags:
+        - 'Product'
+      parameters:
+        - in: path
+          name: status
+          required: true
+          description: Status product
+          schema:
+            type: string
+      description: 'Retrieve a list of product with status'
+      operationId: getProductsByStatus
+      responses:
+        '200':
+          description: 'Product list retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+  /orders:
+    patch:
+      tags:
+        - 'Order'
+      description: 'Retrieve an order page'
+      operationId: getOrders
+      x-spring-paginated: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Status'
+      responses:
+        '200':
+          description: 'Order page retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderPage'
+  /order:
+    post:
+      tags:
+        - 'Order'
+      description: 'Create a new order'
+      operationId: createOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewOrder'
+            examples:
+              NewOrder:
+                $ref: 'examples/order/200-create-order.yaml#/NewOrder'
+      responses:
+        '200':
+          description: 'Order created successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              examples:
+                Order:
+                  $ref: 'examples/order/200-create-order.yaml#/Order'
+  /order/{orderId}:
+    parameters:
+      - in: path
+        name: orderId
+        required: true
+        description: Unique order ID
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - 'Order'
+      description: 'Retrieve details of a specific order by its ID'
+      operationId: getOrderById
+      responses:
+        '200':
+          description: 'Order details retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              examples:
+                Order:
+                  $ref: 'examples/order/200-create-order.yaml#/Order'
+        '404':
+          description: 'Order not found'
+    put:
+      tags:
+        - 'Order'
+      description: 'Update details of a specific order by its ID'
+      operationId: updateOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+            examples:
+              Order:
+                $ref: 'examples/order/200-create-order.yaml#/Order'
+      responses:
+        '200':
+          description: 'Order details updated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              examples:
+                Order:
+                  $ref: 'examples/order/200-update-order.yaml#/Order'
+        '404':
+          description: 'Order not found'
+    delete:
+      tags:
+        - 'Order'
+      description: 'Delete a specific order by their ID'
+      operationId: deleteOrderBy
+      responses:
+        '200':
+          description: 'Order deleted successfully'
+        '404':
+          description: 'Order not found'
+  /order/{orderId}/status:
+    parameters:
+      - in: path
+        name: orderId
+        required: true
+        description: Unique order ID
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - 'Order'
+      description: 'Update order status of a specific order by their ID'
+      operationId: updateOrderStatus
+      responses:
+        '200':
+          description: 'Order status updated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Status'
+  /user/{userId}/created-orders:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        description: Unique user ID
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - 'Order'
+      description: 'Retrieve all orders created by a specific user by their ID'
+      operationId: getCreatedOrdersByUserId
+      responses:
+        '200':
+          description: 'Orders created by the user retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+              examples:
+                Orders:
+                  $ref: 'examples/order/200-get-orders.yaml#/Orders'
+        '404':
+          description: 'User not found'
+
+  /user/{userId}/accepted-orders:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        description: Unique user ID
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - 'Order'
+      description: 'Retrieve all orders accepted by a specific user by their ID'
+      operationId: getAcceptedOrdersByUserId
+      responses:
+        '200':
+          description: 'Orders accepted by the user retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+              examples:
+                Orders:
+                  $ref: 'examples/order/200-get-orders.yaml#/Orders'
+        '404':
+          description: 'User not found'
+  /order-statuses:
+    get:
+      tags:
+        - 'Order'
+      description: 'Retrieve a list of order with pagination support'
+      operationId: getOrderStatuses
+      responses:
+        '200':
+          description: 'Order statuses list retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Status'
+  /categories:
+    get:
+      tags:
+        - 'Category'
+      description: 'Retrieve a list of product categories'
+      operationId: getCategories
+      responses:
+        '200':
+          description: 'Categories list retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+components:
+  schemas:
+    Registration:
+      $ref: 'models/user/model-registration.yaml#/Registration'
+    LogIn:
+      $ref: 'models/user/model-login.yaml#/LogIn'
+    LoginToken:
+      $ref: 'models/user/model-login-token.yaml#/LoginToken'
+    User:
+      $ref: 'models/user/model-user.yaml#/User'
+    NewUser:
+      $ref: 'models/user/model-create-user.yaml#/NewUser'
+    NewProduct:
+      $ref: 'models/product/model-new-product.yaml#/NewProduct'
+    Product:
+      $ref: 'models/product/model-product.yaml#/Product'
+    Status:
+      $ref: 'models/product/product-status.yaml#/Status'
+    ProductPage:
+      type: object
+      allOf:
+        - $ref: 'https://api.swaggerhub.com/apis/spring/pagination/1.0.0#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: 'models/product/model-product.yaml#/Product'
+              default: [ ]
+    NewOrder:
+      $ref: 'models/order/model-new-order.yaml#/NewOrder'
+    Order:
+      $ref: 'models/order/model-order.yaml#/Order'
+    ChangePassword:
+      $ref: 'models/user/model-change-password.yaml#/ChangePassword'
+    UserPage:
+      type: object
+      allOf:
+        - $ref: 'https://api.swaggerhub.com/apis/spring/pagination/1.0.0#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: 'models/user/model-user.yaml#/User'
+              default: [ ]
+    OrderPage:
+      type: object
+      allOf:
+        - $ref: 'https://api.swaggerhub.com/apis/spring/pagination/1.0.0#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: 'models/order/model-order.yaml#/Order'
+              default: [ ]
+    Category:
+      $ref: 'models/category/model-category.yaml#/Category'

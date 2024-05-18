@@ -1,0 +1,7 @@
+Registration:
+  description: test
+  value:
+    email: "mikefg@gmail.com"
+    password: "p]pdsafd%S"
+    firstName: "Mike"
+    lastName: "Smith"
