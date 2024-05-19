@@ -3,6 +3,7 @@ package cz.cvut.fel.bp.product.rest;
 import cz.cvut.fel.bp.api.v1.model.Product;
 import cz.cvut.fel.bp.api.v1.model.Status;
 import cz.cvut.fel.bp.api.v1.rest.ProductApi;
+import cz.cvut.fel.bp.product.component.ProductComponent;
 import cz.cvut.fel.bp.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class ProductController implements ProductApi {
 
+    private final ProductComponent productComponent;
     private final ProductService productService;
 
 
@@ -38,7 +40,7 @@ public class ProductController implements ProductApi {
     public ResponseEntity<Product> getProductById(UUID productId) {
         log.info("Get product. ProductId={}.", productId);
 
-        Product product = productService.getProduct(productId);
+        Product product = productComponent.getProductById(productId);
 
         return ResponseEntity.ok(product);
     }

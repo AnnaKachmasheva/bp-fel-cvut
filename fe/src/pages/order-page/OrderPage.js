@@ -265,8 +265,8 @@ class TableRow extends Component {
             <tr className={this.props.product?.isDeleted ? 'deleted-item' : ''}>
                 <td className={styles.imageColumn}
                     onClick={this.props.handleClick}>
-                    {this.props.product.images?.length > 0 ?
-                        <img src={this.props.product?.images[0]} alt="First product image"/> :
+                    {this.props.product?.image !== null ?
+                        <img src={this.props.product.image} alt="Image not found"/> :
                         <CiImageOff className={styles.noImage}
                                     size={32}/>
                     }

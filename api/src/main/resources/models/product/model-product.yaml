@@ -22,11 +22,8 @@ Product:
       type: string
     isDeleted:
       type: boolean
-    images:
-      type: array
-      items:
-        type: object
-        $ref: "model-image.yaml#/Image"
+    image:
+      type: string
     createdAt:
       type: string
     updatedAt:

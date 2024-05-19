@@ -322,9 +322,21 @@ paths:
       operationId: createProduct
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/NewProduct'
+              type: object
+              properties:
+                NewProduct:
+                  $ref: '#/components/schemas/NewProduct'
+                image:
+                  type: string
+                  format: binary
+            encoding:
+              image:
+                contentType: image/png
+              NewProduct:
+                contentType: application/json
+
       responses:
         '200':
           description: 'Product create successful'

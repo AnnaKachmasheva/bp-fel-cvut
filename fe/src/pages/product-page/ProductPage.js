@@ -85,8 +85,8 @@ function ProductPage(props) {
             <div className={styles.wrapper}>
                 <div className={styles.container}>
                     <img className={styles.image}
-                         src={'todo'}
-                         alt={'image'}/>
+                         src={product.image}
+                         alt="Image not found"/>
 
 
                     <div className={styles.mainInfo}>

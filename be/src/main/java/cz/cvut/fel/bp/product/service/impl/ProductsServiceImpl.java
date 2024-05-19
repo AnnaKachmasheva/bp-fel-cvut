@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author annak
@@ -53,11 +54,11 @@ public class ProductsServiceImpl implements ProductsService {
 
 
     @Override
-    public void createProduct(NewProduct newProduct) {
+    public Optional<UUID> createProduct(NewProduct newProduct) {
         ProductEntity productEntity = newProduct2ProductEntityMapper.toProductEntity(newProduct);
         if (productEntity == null) {
             log.debug("Cannot create new product because request is null");
-            return;
+            return Optional.empty();
         }
 
         Category category = newProduct.getCategory();
@@ -85,6 +86,7 @@ public class ProductsServiceImpl implements ProductsService {
 
         ProductEntity savedProductEntity = productEntityRepository.save(productEntity);
         log.info("Saved product={}.", savedProductEntity);
+        return Optional.of(savedProductEntity.getId());
     }
 
     @Override

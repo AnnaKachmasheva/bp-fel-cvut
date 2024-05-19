@@ -203,14 +203,23 @@ function getAllCategories() {
     }
 }
 
-function createProduct(product) {
+function createProduct(product, photo) {
     const token = getToken().data.token;
+    const formData = new FormData();
+    const json = JSON.stringify(product);
+    const blob = new Blob([json], {
+        type: 'application/json'
+    });
+    formData.append('NewProduct', blob);
+    formData.append('image', photo);
+
     return instance.post(
         API_PRODUCTS,
-        product,
+        formData,
         {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
             }
         }
     ).catch(handleError);

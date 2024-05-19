@@ -47,11 +47,10 @@ export const ModalAddProduct = (props) => {
                 status: {name: (!e.status ? props.statuses[0].name : e.status)},
                 name: e.name,
                 description: e.description,
-                images: []
             };
 
 
-            const response = await userApi.createProduct(product);
+            const response = await userApi.createProduct(product,props.photos[0]);
             if (response && response.error && response.error.message) {
                 setErrorFromServer(response.error.message);
             } else {
@@ -151,7 +150,8 @@ export const ModalAddProduct = (props) => {
 
                                 <div className={'form-group'}>
                                     <label id="image-label"
-                                           for="image-file">
+                                           for="image-file"
+                                           style={{ display: props.photos.length > 0 ? 'none' : 'block' }}>>
                                         + Add photo
                                     </label>
                                     <input

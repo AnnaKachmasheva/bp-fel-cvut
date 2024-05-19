@@ -99,7 +99,9 @@
                             <generateApiDocumentation>true</generateApiDocumentation>
                             <!-- Do not generate tests -->
                             <generateApiTests>false</generateApiTests>
-
+                            <globalProperties>
+                                <skipFormModel>false</skipFormModel>
+                            </globalProperties>
                             <!-- Generate models -->
                             <generateModels>true</generateModels>
                             <generateModelDocumentation>false</generateModelDocumentation>

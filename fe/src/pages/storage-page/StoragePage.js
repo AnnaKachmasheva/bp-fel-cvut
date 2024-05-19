@@ -371,11 +371,7 @@ class TableRow extends Component {
 
                 <td className={styles.imageColumn}
                     onClick={this.props.handleClick}>
-                    {this.props.product.images?.length > 0 ?
-                        <img src={this.props.product?.images[0]} alt="First product image"/> :
-                        <CiImageOff className={styles.noImage}
-                                    size={32}/>
-                    }
+                    <img src={this.props.product?.image} alt="Image not found"/>
                 </td>
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.category?.name)}</td>
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.name)}</td>

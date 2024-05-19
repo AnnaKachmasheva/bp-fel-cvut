@@ -167,8 +167,8 @@ class TableRow extends Component {
                     />
                 </td>
                 <td className={styles.imageColumn}>
-                    {product?.images?.length > 0 ? (
-                        <img src={product?.images[0]} alt="First product image" />
+                    {product?.image !== null ? (
+                        <img src={product?.image} alt="First product image" />
                     ) : (
                         <CiImageOff className={styles.noImage} size={32} />
                     )}

@@ -7,17 +7,34 @@ spring:
     generate-ddl: true
   datasource:
     user:
+      # for development
       jdbc-url: jdbc:postgresql://localhost:5432/user_db
       username: admin
       password: admin
+      # for production
+    # jdbc-url: jdbc:postgresql://qingen.postgres.database.azure.com:5432/userDB
+    # username: postgres
+    # password: Disciples1%
+    #  driver-class-name: org.postgresql.Driver
     product:
+      # for development
       jdbc-url: jdbc:postgresql://localhost:5433/product_db
       username: admin
       password: admin
+      # for production
+      # jdbc-url: jdbc:postgresql://qingen.postgres.database.azure.com:5432/productDB
+     # username: postgres
+     # password: Disciples1%
+     # driver-class-name: org.postgresql.Driver
 
 logging:
   level:
     org.springframework.security: DEBUG
+
+azure:
+  storage:
+    connection: DefaultEndpointsProtocol=https;AccountName=qingenstorage;AccountKey=g530nD8zm8kQk2/uy27lsd5SKoADVij+1VjQDYD+CdwVQJAtW5sHDGFi/4a7RLW9Ae6ikWlakROv+AStN2kNMQ==;BlobEndpoint=https://qingenstorage.blob.core.windows.net/;QueueEndpoint=https://qingenstorage.queue.core.windows.net/;TableEndpoint=https://qingenstorage.table.core.windows.net/;FileEndpoint=https://qingenstorage.file.core.windows.net/;
+    container: product-image
 
 server:
   port: 8005

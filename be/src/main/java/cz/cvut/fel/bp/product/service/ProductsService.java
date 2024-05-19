@@ -4,6 +4,8 @@ import cz.cvut.fel.bp.api.v1.model.*;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author annak
@@ -21,7 +23,7 @@ public interface ProductsService {
     List<Product> getProducts(String status);
 
 
-    void createProduct(NewProduct newProduct);
+    Optional<UUID> createProduct(NewProduct newProduct);
 
     List<Status> getProductStatuses();
 }

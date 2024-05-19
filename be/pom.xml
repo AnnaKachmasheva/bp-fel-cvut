@@ -60,6 +60,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.6.2</version>
         </dependency>
         <!--       lombok         -->
         <dependency>
@@ -98,6 +99,20 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+
+
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core</artifactId>
+            <version>1.45.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>12.25.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -4,6 +4,7 @@ import cz.cvut.fel.bp.api.v1.model.NewOrder;
 import cz.cvut.fel.bp.api.v1.model.Order;
 import cz.cvut.fel.bp.api.v1.model.Status;
 import cz.cvut.fel.bp.api.v1.rest.OrderApi;
+import cz.cvut.fel.bp.order.component.OrderComponent;
 import cz.cvut.fel.bp.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class OrderController implements OrderApi {
 
+    private final OrderComponent orderComponent;
     private final OrderService orderService;
 
 
@@ -49,7 +51,7 @@ public class OrderController implements OrderApi {
     public ResponseEntity<Order> getOrderById(UUID orderId) {
         log.info("Get order. OrderId={}.", orderId);
 
-        Order order = orderService.getOrderById(orderId);
+        Order order = orderComponent.getOrderById(orderId);
 
         return ResponseEntity.ok(order);
     }
