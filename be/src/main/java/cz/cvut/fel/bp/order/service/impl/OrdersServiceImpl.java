@@ -11,6 +11,7 @@ import cz.cvut.fel.bp.order.repository.OrderEntityRepository;
 import cz.cvut.fel.bp.order.repository.StatusOrderEntityRepository;
 import cz.cvut.fel.bp.order.service.OrdersService;
 import cz.cvut.fel.bp.user.entity.UserEntity;
+import cz.cvut.fel.bp.user.entity.UserRole;
 import cz.cvut.fel.bp.user.model.CustomUserDetails;
 import cz.cvut.fel.bp.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author annak
@@ -49,15 +47,30 @@ public class OrdersServiceImpl implements OrdersService {
         log.debug("Get all orders.");
 
         List<StatusOrderEntity> statusOrderEntities = new ArrayList<>();
+        StatusOrderEntity filterCreated = null;
         for (Status status : statuses) {
             Optional<StatusOrderEntity> statusOrderOptional = statusOrderEntityRepository.findByName(status.getName());
             statusOrderOptional.ifPresent(statusOrderEntities::add);
+            if (status.getName().equals("CREATED")) {
+                filterCreated  = statusOrderOptional.get();
+            }
         }
 
-        Page<OrderEntity> orderEntitiesPage = orderEntityRepository.findAllByStatus(statusOrderEntities, pageable);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        UserEntity currentUserEntity = principal.getUserEntity();
+        UserRole userRole = currentUserEntity.getRole();
+        Page<OrderEntity> orderEntitiesPage = null;
+        // all orders for admin, for user only created orders and orders where user is acceptor
+        if (userRole == UserRole.ROLE_ADMIN) {
+            orderEntitiesPage = orderEntityRepository.findAllByStatus(statusOrderEntities, pageable);
+        } else {
+            statusOrderEntities.remove(filterCreated);
+            orderEntitiesPage = orderEntityRepository.findAllByStatusOrAcceptorId(Collections.singletonList(filterCreated),
+                    statusOrderEntities, currentUserEntity.getId(), pageable);
+        }
 
         List<OrderEntity> orderEntities = orderEntitiesPage.getContent();
-
         List<Order> orders = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntities) {
             User creator = userService.getUserById(orderEntity.getCreatorId());
@@ -71,14 +84,6 @@ public class OrdersServiceImpl implements OrdersService {
         }
 
         log.info("Orders size={}", orders.size());
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-        UserEntity currentUserEntity = principal.getUserEntity();
-
-        List<Order> acceptedOrders = getAllAcceptedOrders(currentUserEntity.getId());
-        orders.addAll(acceptedOrders);
-        log.info("Accepted orders size={}", acceptedOrders.size());
 
         OrderPage orderPage = new OrderPage();
         orderPage.setContent(orders);

@@ -24,7 +24,7 @@ function App() {
                     <Route key={"app/product/:id"}
                            path="app/product/:id"
                            element={<BasicPage page={<ProductPage/>}
-                                               title={PageTitles.INVENTORY}/>}/>
+                                               title={PageTitles.STORAGE}/>}/>
                     <Route path="/" element={<Navigate replace to="app/dashboard"/>}/>
                 </Route>
                 {publicRoutes.map(({path, main}) => (

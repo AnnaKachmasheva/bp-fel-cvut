@@ -2,6 +2,7 @@
 
 .navBarContainer {
   width: 100vw;
+
   padding-left: 240px;
   height: 64px;
 
@@ -82,7 +83,15 @@
 @media (max-width: 768px) {
 
   .navBarContainer {
-    width: 80vw;
+    padding-left: 80vw;
+
+    span {
+      display: none;
+    }
+  }
+
+
+  .navBarContainer {
     margin-top: 0;
     margin-left: 30px;
     z-index: 102;
@@ -111,17 +120,14 @@
     display: none;
   }
 
-
+  .backIcon {
+    margin-right: 0;
+    float: right;
+    color: white;
+  }
 }
 
 
 @media (max-width: 460px) {
-
-  .navBarContainer {
-    span {
-      display: none;
-    }
-
-  }
 
 }

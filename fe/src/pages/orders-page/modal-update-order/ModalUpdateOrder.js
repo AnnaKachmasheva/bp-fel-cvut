@@ -37,7 +37,7 @@ export const ModalUpdateOrder = (props) => {
                 description
             };
 
-            const response = await userApi.updateOrder(order);
+            const response = await userApi.updateOrder(props.idOrder, order);
             if (response && response.error && response.error.message) {
                 setErrorFromServer(response.error.message);
             } else {

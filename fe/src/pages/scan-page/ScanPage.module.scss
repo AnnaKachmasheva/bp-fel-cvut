@@ -1,28 +1,3 @@
-.libraryContainer {
-  padding: 10px;
-  margin: 20px 20px 0 0;
-  text-align: center;
-  background: #1c7743;
-  color: white;
-  cursor: pointer;
-  height: 40px;
-  width: 90%;
-
-  border-radius: 6px;
-
-  li {
-    height: 100%;
-  }
-}
-
-.libraryContainer:hover {
-  background: #176739;
-
-  li {
-    color: white;
-  }
-}
-
 h4 {
   margin: 10px;
   font-weight: normal;
@@ -33,36 +8,38 @@ h4 {
   width: 100vw;
   height: 100vh;
   display: inline-flex;
+  justify-content: space-between;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   background: black;
+  color: white;
 
-  > section {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-
-  }
-
-  .qrReader {
-    width: 90vw;
-    height: 100%;
-    margin-top: -10vh;
-
-    > div {
-
-      video {
-        //border: 2px solid green;
-      }
-    }
-  }
-
-  .Button {
-    position: fixed;
-    margin-top: 80vh;
-    width: 90vw;
+  button {
+    margin-top: -30px;
+    width: 300px;
   }
 }
 
+.qrReader {
+  margin-top: 25vh;
+  margin-bottom: 0;
+  width: 320px;
+  height: auto;
+}
+
+button {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.productName {
+  color: #1c7743;
+}
+
+.title {
+  margin: 30px 0;
+}
+
+.cancelBtn {
+  width: auto;
+}

@@ -1,5 +1,6 @@
 package cz.cvut.fel.bp.exceptions.controller;
 
+import cz.cvut.fel.bp.InvalidRequestDataException;
 import cz.cvut.fel.bp.exceptions.*;
 import cz.cvut.fel.bp.exceptions.model.ErrorDetails;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,8 @@ public class ControllerAdvisor {
             DeletedException.class,
             PasswordNotMatchesException.class,
             AlreadyExistException.class,
-            AlreadyCompleteException.class})
+            AlreadyCompleteException.class,
+            InvalidRequestDataException.class})
     ResponseEntity<ErrorDetails> handlerNoUserFoundException(CustomException e) {
         ErrorDetails response = new ErrorDetails(e.getErrorCode(), e.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);

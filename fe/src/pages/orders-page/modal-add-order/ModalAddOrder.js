@@ -1,6 +1,6 @@
 import React, {Component, useRef} from "react";
 import {userApi} from "../../../services/api";
-import {Field, Form, Formik} from "formik";
+import {Form, Formik} from "formik";
 import Button, {ButtonSize, ButtonType} from "../../../components/button/Button";
 import ModalWindow from "../../../components/modal/ModalWindow";
 import styles from "./AddOrderPage.module.scss";
@@ -157,7 +157,7 @@ class TableRow extends Component {
     };
 
     render() {
-        const { product } = this.props;
+        const {product} = this.props;
         return (
             <tr>
                 <td className={styles.checkbox}>
@@ -168,9 +168,9 @@ class TableRow extends Component {
                 </td>
                 <td className={styles.imageColumn}>
                     {product?.image !== null ? (
-                        <img src={product?.image} alt="First product image" />
+                        <img src={product?.image} alt="First product image"/>
                     ) : (
-                        <CiImageOff className={styles.noImage} size={32} />
+                        <CiImageOff className={styles.noImage} size={32}/>
                     )}
                 </td>
                 <td>{showValue(product?.category?.name)}</td>

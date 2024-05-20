@@ -2,7 +2,7 @@ import React, {Component, useEffect, useState} from "react"
 import Button, {ButtonSize, ButtonType} from "../../components/button/Button";
 import {useNavigate} from "react-router-dom";
 import {userApi} from "../../services/api";
-import {removeToken} from "../../services/auth";
+import {isAdmin, removeToken} from "../../services/auth";
 import {FiPlus} from "react-icons/fi";
 import styles from "./OrdersPage.module.scss";
 import {FaArrowDown, FaArrowUp} from "react-icons/fa";
@@ -10,8 +10,7 @@ import {IoIosMore, IoMdClose} from "react-icons/io";
 import Pagination from "../../components/pagination/Pagination";
 import {ModalDeleteProductConfirm} from "../storage-page/modal-delete-product/ModalDeleteProductConfirm";
 import {ModalUpdateProduct} from "../storage-page/modal-update-product/ModalUpdateProduct";
-import {CiImageOff} from "react-icons/ci";
-import {formatDatetime, showStatus, showValue} from "../../utils/Common";
+import {formatDatetime, showValue} from "../../utils/Common";
 import {ModalAddOrder} from "./modal-add-order/ModalAddOrder";
 
 
@@ -159,12 +158,12 @@ function OrdersPage() {
         }
     };
 
-    const handleGoToOrderPage =(order) => {
+    const handleGoToOrderPage = (order) => {
         const id = order.id;
         navigate(`/app/order/${id}`, {state: {order: order}});
     }
 
-    const handleIsCheckedStatus = (name)=> {
+    const handleIsCheckedStatus = (name) => {
         for (let i = 0; i < selectedStatuses.length; i++) {
             if (selectedStatuses[i].name === name) {
                 return true;
@@ -175,10 +174,8 @@ function OrdersPage() {
 
     const handleAddProduct = (product) => {
         const id = product?.id;
-        console.log('product' + product)
 
         const existedProduct = selectedProducts.some(product => product.id === id)
-        console.log('existedProduct' + existedProduct)
 
         if (!existedProduct) {
             setSelectedProducts([...selectedProducts, product])
@@ -203,13 +200,14 @@ function OrdersPage() {
 
             <div className={'panel'}>
                 <div className={'total'}>
-
-                    <Button onClick={() => setShowModalAddOrder(true)}
-                            type={ButtonType[2].type}
-                            size={ButtonSize[1].size}
-                            isIconEnd={true}
-                            icon={<FiPlus/>}
-                            label={'Add order'}/>
+                    {isAdmin() ?
+                        <Button onClick={() => setShowModalAddOrder(true)}
+                                type={ButtonType[2].type}
+                                size={ButtonSize[1].size}
+                                isIconEnd={true}
+                                icon={<FiPlus/>}
+                                label={'Add order'}/>
+                        : <div/>}
 
                     <div className={styles.sortContainer}>
                         {/* button select sorting */}
@@ -328,7 +326,7 @@ function OrdersPage() {
                         onPageChange={handlePageChange}
                         countElements={countElements}
                         changeCountElemnts={handleChangeCountElements}
-                        name={'products'}/>
+                        name={'orders'}/>
         </div>
     )
 }
@@ -391,8 +389,6 @@ class TableRow extends Component {
                     {this.props.order.status.name.toLowerCase()}
                 </span>
                 </td>
-
-                {/*<td onClick={this.props.handleClick}>{showValue(this.props.order?.description)}</td>*/}
 
                 <td className={styles.actions}
                     onClick={this.handleShowOptions}>

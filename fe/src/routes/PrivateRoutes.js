@@ -113,7 +113,6 @@ function PrivateRoutes() {
     return (
         <Outlet>
             {privateRoutes.map((route, index) => {
-                // Check if the route should be accessible based on user role
                 if ((isUser() && [
                         'app/home',
                         'app/orders',

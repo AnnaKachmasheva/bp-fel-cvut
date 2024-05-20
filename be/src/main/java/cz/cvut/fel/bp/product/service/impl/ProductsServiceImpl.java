@@ -140,10 +140,10 @@ public class ProductsServiceImpl implements ProductsService {
         }
 
         StatusProductEntity statusProduct = statusProductOptional.get();
-        log.info("Status product={}", statusProduct); // todo debug
+        log.debug("Status product={}", statusProduct);
 
         List<ProductEntity> productEntities = productEntityRepository.findAllByStatusAndIsDeletedIsFalse(statusProduct);
-        log.info("Found {} products with status={}", productEntities.size(), status);  // todo debug
+        log.debug("Found {} products with status={}", productEntities.size(), status);
 
         // must be products with status IN_STOCK and not in order with status CREATED
         Optional<StatusOrderEntity> statusOrderEntityOptional = statusOrderEntityRepository.findByName("CREATED");
@@ -152,8 +152,9 @@ public class ProductsServiceImpl implements ProductsService {
             throw new NotFoundException("STATUS_NOT_FOUND", "Status=CREATED not found");
         }
 
-        List<OrderEntity> orderEntities = orderEntityRepository.findAllByStatus(List.of(statusOrderEntityOptional.get()));
-        log.info("Found {} orders with status={}", orderEntities.size(), statusOrderEntityOptional.get());  // todo debug
+        Page<OrderEntity> orderEntitiesPage = orderEntityRepository.findAllByStatus(List.of(statusOrderEntityOptional.get()), null);
+        List<OrderEntity> orderEntities = orderEntitiesPage.getContent();
+        log.debug("Found {} orders with status={}", orderEntities.size(), statusOrderEntityOptional.get());
 
         List<ProductEntity> resultProductList = new ArrayList<>();
         for (ProductEntity productEntity : productEntities) {

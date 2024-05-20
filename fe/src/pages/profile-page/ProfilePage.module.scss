@@ -26,6 +26,7 @@
 
     p {
       color: $form-sub-tile-color;
+
       span {
         color: black;
       }
@@ -39,22 +40,23 @@
   }
 
   button {
-    margin-top: 2vh;
+    //margin-top: 2vh;
     width: 100%;
   }
 
-  .buttons{
+  .buttons {
     display: inline-flex;
-    gap: 20px;
+    padding-top: 20px;
   }
 }
 
 .userProfile {
-  max-width: 100%;
+  max-width: 90%;
+  margin: 0 auto;
 }
 
 .deleteButton {
-  margin: 0 auto;
+  margin: 20px auto;
   bottom: 0;
   min-width: 160px;
   width: 10vw;

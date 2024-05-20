@@ -11,25 +11,31 @@ import {IoMdClose} from "react-icons/io";
 import {ModalDeleteProductConfirm} from "../storage-page/modal-delete-product/ModalDeleteProductConfirm";
 import {ModalUpdateProduct} from "../storage-page/modal-update-product/ModalUpdateProduct";
 import {userApi} from "../../services/api";
-import {removeToken} from "../../services/auth";
+import {isAdmin} from "../../services/auth";
 
 
 function ProductPage(props) {
 
     const navigate = useNavigate();
 
+    const {id} = useParams();
+    const {state} = useLocation();
+
     const [showPrintCode, setShowPrintCode] = useState(false);
     const [showConfirmDeleteProduct, setShowConfirmDeleteProduct] = useState(false);
     const [showUpdateProduct, setShowUpdateProduct] = useState(false);
     const [qrCodeSize, setQRCodeSize] = useState(100);
     const [categories, setCategories] = useState([]);
-    const [statuses, setStatuses] = useState([]);
+    const [statuses, setStatuses] = useState('');
+    const [product, setProduct] = useState('');
+    const [status, setProductStatus] = useState('');
+    const [isDeleted, setIsDeleted] = useState('');
+    const [errorFromServer, setErrorFromServer] = useState('');
 
-    const {idProduct} = useParams();
-    const {state} = useLocation();
 
-    const product = state.product;
-    const status = state.product.status?.name == null ? "" : state.product.status.name.toLowerCase();
+    useEffect(() => {
+        fetchProduct().then();
+    }, []);
 
     useEffect(() => {
         fetchCategories().then(() => {
@@ -37,13 +43,28 @@ function ProductPage(props) {
         });
     }, []);
 
+
+    const fetchProduct = async () => {
+        try {
+            const response = await userApi.getProductById(id);
+            if (response && response.error) {
+                setErrorFromServer(response.error.message);
+            } else {
+                setProduct(response.data);
+                setProductStatus(response.data.status.name);
+                setIsDeleted(response.data.isDeleted)
+            }
+        } catch (error) {
+            setErrorFromServer(error)
+        }
+    };
+
     const fetchCategories = async () => {
         try {
             const categoriesData = await userApi.getAllCategories();
             setCategories(categoriesData.data);
         } catch (error) {
-            removeToken();
-            navigate('/app/logout');
+            setErrorFromServer(error)
         }
     };
 
@@ -52,8 +73,7 @@ function ProductPage(props) {
             const statuses = await userApi.getAllStatuses();
             setStatuses(statuses.data);
         } catch (error) {
-            removeToken();
-            navigate('/app/logout');
+            setErrorFromServer(error)
         }
     };
 
@@ -70,6 +90,7 @@ function ProductPage(props) {
     };
 
 
+    let Deleted;
     return (
         <div className={'content'}>
             <ModalDeleteProductConfirm onClose={() => setShowConfirmDeleteProduct(false)}
@@ -82,30 +103,37 @@ function ProductPage(props) {
                                 categories={categories}
                                 statuses={statuses}/>
 
+            {errorFromServer}
+
             <div className={styles.wrapper}>
                 <div className={styles.container}>
                     <img className={styles.image}
-                         src={product.image}
-                         alt="Image not found"/>
-
+                         src={product?.image}
+                         alt={"Image not found"}/>
 
                     <div className={styles.mainInfo}>
                     <span className={styles.category}>
-                        [{product.category?.name}]
+                        [{product?.category?.name}]
                     </span>
 
-                        <h2>{product.name}</h2>
+                        <h2>{product?.name}</h2>
 
-                        <span className={status.concat(" ").concat(stylesStorage.status)}>
-                         {showStatus(status)}
-                    </span>
+                        {isDeleted ?
+                            <span className={"deleted ".concat(stylesStorage.status)}>
+                                Deleted
+                            </span> :
+                            <span className={status.toLowerCase().concat(" ").concat(stylesStorage.status)}>
+                                {showStatus(status)}
+                            </span>
+                        }
 
-                        <p className={styles.description}>{product.description}</p>
+                        <p className={styles.description}>{product?.description}</p>
                         <br/>
 
-                        <p className={styles.date}>created: {product.createdAt}</p>
-                        <p className={styles.date}>updated: {product.updatedAt}</p>
+                        <p className={styles.date}>created: {product?.createdAt}</p>
+                        <p className={styles.date}>updated: {product?.updatedAt}</p>
 
+                        {isAdmin() ?
                         <div className={'buttons'}>
                             <Button label={'Edit'}
                                     type={ButtonType[2].type}
@@ -114,13 +142,15 @@ function ProductPage(props) {
                                     icon={<MdPassword/>}/>
 
 
-                            <Button label={'Delete'}
-                                    type={ButtonType[4].type}
-                                    size={ButtonSize[0].size}
-                                    onClick={() => setShowConfirmDeleteProduct(true)}
-                                    icon={<BsPencil/>}/>
-
+                            {isDeleted ? null :
+                                <Button label={'Delete'}
+                                        type={ButtonType[4].type}
+                                        size={ButtonSize[0].size}
+                                        onClick={() => setShowConfirmDeleteProduct(true)}
+                                        icon={<BsPencil/>}/>
+                            }
                         </div>
+                        : null }
                     </div>
                 </div>
             </div>

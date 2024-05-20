@@ -1,7 +1,7 @@
 import axios from "axios";
 import {API_BASE_URL} from "../routes/BaseRoutes";
 import {getToken, isUser} from "./auth";
-import {API_LOGIN, API_REGISTRATION, API_USER, API_USER_PROFILE, API_USERS} from "../routes/UserRoutes";
+import {API_LOGIN, API_REGISTRATION, API_STATISTICS, API_USER, API_USER_PROFILE, API_USERS} from "../routes/UserRoutes";
 import {API_CATEGORIES} from "../routes/CategoryRoutes";
 import {API_PRODUCT, API_PRODUCT_STATUSES, API_PRODUCTS} from "../routes/ProductRoutes";
 import {API_ORDER, API_ORDER_STATUSES, API_ORDERS} from "../routes/OrderRoutes";
@@ -19,6 +19,7 @@ export const userApi = {
     createProduct,
     deleteProduct,
     updateProduct,
+    getProductById,
     getAllProducts,
     getAllInStockProducts,
 
@@ -31,7 +32,9 @@ export const userApi = {
     getAllOrderStatuses,
     updateStatusOrder,
     deleteOrder,
-    updateOrder
+    updateOrder,
+
+    getStatistics
 }
 
 function login(email, password) {
@@ -258,6 +261,27 @@ function updateProduct(productId, product) {
     }
 }
 
+function getProductById(productId) {
+    try {
+        const token = getToken().data.token;
+
+        return instance.get(
+            API_PRODUCT + `/${productId}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+    } catch (error) {
+        handleError(error)
+    }
+}
+
+
 function getAllProducts(selectedCategories, currentPage, countElements, sort, order) {
     try {
         const token = getToken().data.token;
@@ -376,10 +400,6 @@ function getAllOrders(ordersStatuses, currentPage, countElements, sort, order) {
             statuses.push(status);
         }
 
-        if (isUser()) {
-            statuses = [{name: 'CREATED'}]
-        }
-
         return instance.patch(
             API_ORDERS + '?page=' + (currentPage - 1) + '&size=' + countElements + '&sort=' + sort + ',' + order,
             statuses,
@@ -447,6 +467,26 @@ function updateOrder(orderId, product) {
         );
     } catch (error) {
         handleError(error);
+    }
+}
+
+function getStatistics() {
+    try {
+        const token = getToken().data.token;
+
+        return instance.get(
+            API_STATISTICS,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+    } catch (error) {
+        handleError(error)
     }
 }
 

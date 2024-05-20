@@ -39,7 +39,7 @@ export const formatDatetime = (datetime) => {
 }
 
 export const toStringForQRCode = (productId) => {
-    return `inventory-management:${productId}`;
+    return `inventory-track:${productId}`;
 }
 
 export const decodeData = (data) => {
@@ -49,9 +49,11 @@ export const decodeData = (data) => {
         let parts = data.split(':');
         let nameApp = parts[0];
         let idProduct = parts[1];
+        if (nameApp !== 'inventory-track') {
+            return {error: {message: 'Invalid QR code'}};
+        }
 
-        console.log("Substring nameApp:", nameApp);
-        console.log("Substring idProduct:", idProduct);
+        return idProduct;
     }
 }
 

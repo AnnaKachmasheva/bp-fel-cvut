@@ -3,6 +3,7 @@ import Button, {ButtonSize, ButtonType} from "../../components/button/Button";
 import {useNavigate, useParams} from "react-router-dom";
 import {isAdmin, isUser} from "../../services/auth";
 import styles from "../storage-page/StoragePage.module.scss";
+import stylesStorage from "../storage-page/StoragePage.module.scss";
 import {CiImageOff} from "react-icons/ci";
 import {showStatus, showValue} from "../../utils/Common";
 import {FaCheck, FaPen} from "react-icons/fa";
@@ -15,6 +16,7 @@ import {ModalDeleteOrderConfirm} from "./modal-delete-order/ModalDeleteOrderConf
 import {ModalUpdateOrder} from "../orders-page/modal-update-order/ModalUpdateOrder";
 import {ModalScanCode} from "./modal-scan-code/ModalScanCode";
 import {HiOutlinePencilAlt} from "react-icons/hi";
+import {LuListRestart} from "react-icons/lu";
 
 
 function OrderPage() {
@@ -31,12 +33,13 @@ function OrderPage() {
     const {id} = useParams();
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [showUpdate, setShowUpdate] = useState(false);
-
-    const [successScanProducts, setSuccessScanProducts] = useState([]);
-    const [startScan, setStartScan] = useState(false);
     const [showScanModal, setShowScanModal] = useState(false);
     const [scannedCode, setScannedCode] = useState("");
+    const [isSomeDeletedProducts, setIsSomeDeletedProducts] = useState(false);
+    const [isAccept, setIsAccept] = useState(false);
+    const [scannedProducts, setScannedProducts] = useState([]);
 
+    const [selectedProduct, setSelectedProduct] = useState("");
 
     useEffect(() => {
         fetchOrder().then();
@@ -48,10 +51,18 @@ function OrderPage() {
             if (response && response.error) {
                 setErrorFromServer(response.error.message);
             } else {
-                setOrder(response.data.order);
+                setOrder(response.data);
                 setOrderStatus(response.data?.status.name || "");
                 setProducts(response.data?.product || []);
                 setIsDeleted(response.data?.isDeleted || false)
+                let isAnyDeleted = false;
+                response.data?.product.forEach((product) => {
+                    if (product.isDeleted) {
+                        isAnyDeleted = true;
+                    }
+                });
+
+                setIsSomeDeletedProducts(isAnyDeleted);
             }
         } catch (error) {
             navigate(-1);
@@ -79,28 +90,42 @@ function OrderPage() {
         }
     }
 
-    const handleAccept = (order) => {
-        setStartScan(true);
-    };
-
     const goToProductPage = (product) => {
         const id = product.id;
         navigate(`/app/storage/product/${id}`, {state: {product: product}});
     };
 
-    const deleteOrder = () => {
-
-    };
     const updateOrder = () => {
         //todo
     };
 
     const completeWithoutMissingItems = () => {
-        // Logic to complete without missing items
+       changeStatus("COMPLETED")
     };
 
     const changeStatus = (status) => {
         updateStatus(status).then();
+    }
+
+    const handleClickProduct = (product) => {
+        if (isProductAlreadySelected(product)) {
+            // none
+        } else if (!isAccept) {
+            goToProductPage(product)
+        } else {
+            setSelectedProduct(product)
+            setShowScanModal(true)
+        }
+    }
+
+    const isProductAlreadySelected = (newProduct) => {
+        return scannedProducts.some(product => product === newProduct);
+    }
+
+    const addProductToScanned = () => {
+        if (!isProductAlreadySelected(selectedProduct)) {
+            setScannedProducts([...scannedProducts, selectedProduct]);
+        }
     }
 
 
@@ -114,11 +139,16 @@ function OrderPage() {
             <ModalUpdateOrder onClose={() => setShowUpdate(false)}
                               show={showUpdate}
                               products={products}
+                              idOrder={id}
                               updateOrder={() => updateOrder()}/>
 
             <ModalScanCode onClose={() => setShowScanModal(false)}
                            show={showScanModal}
-                           scanedCode={setScannedCode}/>
+                           code={scannedCode}
+                           product={selectedProduct}
+                           scanedCode={setScannedCode}
+                           rescan={() => setScannedCode('')}
+                           addProductToScanned={addProductToScanned}/>
 
             <h3>{id}</h3>
 
@@ -131,6 +161,24 @@ function OrderPage() {
                     {orderStatus.toLowerCase()}
                 </span>
             </h1>
+
+            {(isSomeDeletedProducts && isUser()) ?
+                <span className={styles.errorMessage}>
+                    Some products have been deleted, please postpone this order.
+                    It cannot be completed.
+                </span> : null}
+
+            {(isSomeDeletedProducts && isAdmin()) ?
+                <span className={styles.errorMessage}>
+                    Some products have been removed, please check this order.
+                </span> : null}
+
+            <p>{order?.description}</p>
+
+            <p><span>Admin creator:</span> {order?.creator?.firstName} {order?.creator?.lastName}</p>
+            <p><span>User acceptor:</span> {order?.acceptor?.firstName} {order?.acceptor?.lastName}</p>
+            <p><span>Created:</span> {order?.createdAt}</p>
+            <p><span>Last updated:</span> {order?.updatedAt}</p>
 
             <h5>Products</h5>
             <table>
@@ -158,9 +206,8 @@ function OrderPage() {
                 {products.map((product, index) =>
                     <TableRow product={product}
                               key={index}
-                              startScan={startScan}
-                              handleClick={!startScan ? () => goToProductPage(product) :
-                                  () => setShowScanModal(true)}
+                              isProductAlreadySelected={isProductAlreadySelected(product)}
+                              handleClick={() => handleClickProduct(product)}
                     />
                 )}
                 </tbody>
@@ -171,7 +218,7 @@ function OrderPage() {
 
                 <span>{errorFromServer.message}</span>
 
-                {!admin && orderStatus === 'CREATED' ?
+                {!admin && (orderStatus === 'CREATED') ?
                     <Button onClick={() => changeStatus("PROCESSING")}
                             type={ButtonType[2].type}
                             size={ButtonSize[1].size}
@@ -201,23 +248,36 @@ function OrderPage() {
                     : null
                 }
 
-                {!admin && orderStatus === 'PROCESSING' ?
-                    <Button onClick={() => changeStatus("COMPLETE")}
+
+                {!admin && orderStatus === 'PROCESSING' && isAccept ?
+                    <Button onClick={() => changeStatus("COMPLETED")}
                             type={ButtonType[2].type}
                             size={ButtonSize[1].size}
                             isIconEnd={true}
+                            isDisabled={products.length !== scannedProducts.length}
                             icon={<MdChecklistRtl/>}
                             label={'Complete'}/>
                     : null
                 }
 
-                {!admin && orderStatus === 'PROCESSING' ?
+                {!admin && orderStatus === 'PROCESSING' && !isAccept && !isSomeDeletedProducts ?
+                    <Button onClick={() => setIsAccept(true)}
+                            type={ButtonType[2].type}
+                            size={ButtonSize[1].size}
+                            isIconEnd={true}
+                            icon={<LuListRestart/>}
+                            label={'Start scan'}/>
+                    : null
+                }
+
+                {!admin && ((orderStatus === 'PROCESSING'))  ?
                     <Button onClick={() => changeStatus("BACKORDERED")}
                             type={ButtonType[0].type}
                             size={ButtonSize[1].size}
                             isIconEnd={true}
                             icon={<GiBackwardTime/>}
-                            label={'Back ordering'}/>
+                            isDisabled={products.length === scannedProducts.length}
+                            label={'Postpone'}/>
                     : null
                 }
 
@@ -262,7 +322,8 @@ class TableRow extends Component {
 
     render() {
         return (
-            <tr className={this.props.product?.isDeleted ? 'deleted-item' : ''}>
+            <tr className={(this.props.product?.isDeleted ? 'deleted-item ' : ' ')
+                .concat(this.props.isProductAlreadySelected ? 'selected-row' : '')}>
                 <td className={styles.imageColumn}
                     onClick={this.props.handleClick}>
                     {this.props.product?.image !== null ?
@@ -274,12 +335,15 @@ class TableRow extends Component {
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.category?.name)}</td>
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.name)}</td>
                 <td onClick={this.props.handleClick}>
-                    {this.props.product.status ?
+                    {this.props.product.isDeleted ?
+                        <span className={"deleted ".concat(stylesStorage.status)}>
+                            Deleted
+                        </span> :
                         <span className={this.props.product.status.name.toLowerCase()
                             .concat(" ")
                             .concat(styles.status)}>
                          {showStatus(this.props.product.status.name)}
-                    </span> : "undefined"
+                        </span>
                     }
                 </td>
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.description)}</td>

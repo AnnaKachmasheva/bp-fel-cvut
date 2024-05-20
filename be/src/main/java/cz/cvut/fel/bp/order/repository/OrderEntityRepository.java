@@ -23,14 +23,17 @@ public interface OrderEntityRepository extends JpaRepository<OrderEntity, Long> 
     Optional<OrderEntity> findById(UUID orderId);
 
     @Query("""
-            SELECT t FROM OrderEntity t WHERE t.status IN (:statuses)
-           """)
+             SELECT t FROM OrderEntity t WHERE t.status IN (:statuses)
+            """)
     Page<OrderEntity> findAllByStatus(@Param("statuses") List<StatusOrderEntity> statuses, Pageable pageable);
 
 
     @Query("""
-            SELECT t FROM OrderEntity t WHERE t.status IN (:statuses)
-           """)
-    List<OrderEntity> findAllByStatus(@Param("statuses") List<StatusOrderEntity> statuses);
+             SELECT t FROM OrderEntity t WHERE t.status IN (:req_statuses) OR (t.acceptorId = (:acceptorId) AND t.status IN (:not_req_statuses))
+            """)
+    Page<OrderEntity> findAllByStatusOrAcceptorId(@Param("req_statuses") List<StatusOrderEntity> requiredStatuses,
+                                                  @Param("not_req_statuses") List<StatusOrderEntity> otherStatuses,
+                                                  @Param("acceptorId") UUID acceptorId,
+                                                  Pageable pageable);
 
 }

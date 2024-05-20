@@ -1,11 +1,11 @@
 package cz.cvut.fel.bp.order.service.impl;
 
+import cz.cvut.fel.bp.InvalidRequestDataException;
 import cz.cvut.fel.bp.api.v1.model.NewOrder;
 import cz.cvut.fel.bp.api.v1.model.Order;
 import cz.cvut.fel.bp.api.v1.model.Status;
 import cz.cvut.fel.bp.api.v1.model.User;
 import cz.cvut.fel.bp.common.utils.Utils;
-import cz.cvut.fel.bp.exceptions.AlreadyCompleteException;
 import cz.cvut.fel.bp.exceptions.NotFoundException;
 import cz.cvut.fel.bp.exceptions.PermissionDeniedException;
 import cz.cvut.fel.bp.order.entity.OrderEntity;
@@ -31,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -111,9 +112,9 @@ public class OrderServiceImpl implements OrderService {
         log.debug("Find by id={} order={}", orderId, orderEntity);
 
         User creator = userService.getUserById(orderEntity.getCreatorId());
-        User acceptor =  null;
+        User acceptor = null;
         if (orderEntity.getAcceptorId() != null) {
-             acceptor = userService.getUserById(orderEntity.getAcceptorId());
+            acceptor = userService.getUserById(orderEntity.getAcceptorId());
         }
 
         return orderEntity2OrderMapper.toOrder(orderEntity, creator, acceptor);
@@ -146,94 +147,231 @@ public class OrderServiceImpl implements OrderService {
                                    Status status) {
         Optional<OrderEntity> orderEntityOptional = orderEntityRepository.findById(orderId);
         if (orderEntityOptional.isEmpty()) {
-            log.error( "Not found order with id={}", orderId);
+            log.error("Not found order with id={}", orderId);
             throw new NotFoundException("NO_FOUND_ORDER", "Not found order with id=" + orderId);
         }
 
         Optional<StatusOrderEntity> statusOrderEntity = statusOrderEntityRepository.findByName(status.getName());
         if (statusOrderEntity.isEmpty()) {
-            log.error( "Not found order status={}", status);
-            throw new NotFoundException("NO_FOUND_ORDER_STATUS", "Not found order status=" + status);
+            log.error("Not found new order status={}", status);
+            throw new NotFoundException("NO_FOUND_ORDER_STATUS", "Not found new order status=" + status);
         }
 
-        OrderEntity orderEntity = orderEntityOptional.get();
+        // update order status
+        OrderEntity orderEntity = changeOrderStatus(orderEntityOptional.get(), statusOrderEntity.get());
 
-        if (statusOrderEntity.get().getName().equals("PROCESSING")) {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-            UserEntity currentUserEntity = principal.getUserEntity();
-            orderEntity.setAcceptorId(currentUserEntity.getId());
-        }
-
-        // check order status
-        if (orderEntity.getStatus().getName().equals("COMPLETED") ||
-                orderEntity.getStatus().getName().equals("CANCELED")) {
-            log.error("Order with id={}already completed", orderId);
-            throw new AlreadyCompleteException("ALREADY_COMPLETED_ORDER", "Order with id=" + orderId + "already completed");
-        }
-
-        // check user permission
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-        UserEntity currentUserEntity = principal.getUserEntity();
-        UserRole role = currentUserEntity.getRole();
-
-
-        if ((role == UserRole.ROLE_USER) && (orderEntity.getStatus().getName().equals("BACKORDERED"))) {
-            log.error("User cannot change status order with id={}", orderId);
-            throw new PermissionDeniedException("CANNOT_CHANGE_STATUS", "User cannot change status order with id=" + orderId);
-        }
-
-        if ((role == UserRole.ROLE_ADMIN) && !(orderEntity.getStatus().getName().equals("BACKORDERED"))) {
-            log.error("User cannot change status order with id={}", orderId);
-            throw new PermissionDeniedException("CANNOT_CHANGE_STATUS", "User cannot change status order with id=" + orderId);
-        }
-
-        orderEntity.setStatus(statusOrderEntity.get());
-
-        OrderEntity updatedOrderEntity = orderEntityRepository.save(orderEntity);
-
+        // get entity creator and acceptor
         User creator = userService.getUserById(orderEntity.getCreatorId());
         User acceptor = null;
         if (orderEntity.getAcceptorId() != null) {
             acceptor = userService.getUserById(orderEntity.getAcceptorId());
         }
 
-        List<ProductEntity> productEntities = orderEntity.getProducts();
-        for (ProductEntity productEntity : productEntities) {
-            String statusName = productEntity.getStatus().getName();
-            if (statusName.equals("IN_STOCK")) {
-                Optional<StatusProductEntity> statusProduct = statusProductEntityRepository.findByName("PENDING_DELIVERY");
-                if (statusProduct.isEmpty()) {
-                    log.error("Not found new product status={}", orderId);
-                    throw new NotFoundException("NO_FOUND_NEW_PRODUCT_STATUS", "Not found new product status");
-                }
-                productEntity.setStatus(statusProduct.get());
-            }
+        return orderEntity2OrderMapper.toOrder(orderEntity, creator, acceptor);
+    }
 
-            if (statusName.equals("PENDING_DELIVERY") && orderEntity.getStatus().getName().equals("COMPLETED")) {
-                Optional<StatusProductEntity> statusOrder = statusProductEntityRepository.findByName("DELIVERED");
-                if (statusOrder.isEmpty()) {
-                    log.error("Not found new product status={}", "DELIVERED");
-                    throw new NotFoundException("NO_FOUND_NEW_PRODUCT_STATUS", "Not found new product status");
-                }
-                productEntity.setStatus(statusOrder.get());
-            }
+    private OrderEntity changeOrderStatus(OrderEntity orderEntity,
+                                          StatusOrderEntity newOrderStatus) {
 
-            if (statusName.equals("DELIVERED") || orderEntity.getStatus().getName().equals("CANCELED")) {
-                Optional<StatusProductEntity> statusOrder = statusProductEntityRepository.findByName("IN_STOCK");
-                if (statusOrder.isEmpty()) {
-                    log.error("Not found new product status={}", "IN_STOCK");
-                    throw new NotFoundException("NO_FOUND_NEW_PRODUCT_STATUS", "Not found new product status");
-                }
-                productEntity.setStatus(statusOrder.get());
-            }
+        String oldOrderStatusName = orderEntity.getStatus().getName();
+        String newOrderStatusName = newOrderStatus.getName();
+        log.debug("Start change order={} status from {} to {}.", orderEntity.getId(), oldOrderStatusName, newOrderStatusName);
 
-            productEntityRepository.save(productEntity);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        UserEntity currentUserEntity = principal.getUserEntity();
+        UserRole userRole = currentUserEntity.getRole();
+        log.debug("current user has role={}", userRole);
+
+        switch (oldOrderStatusName) {
+            case "CREATED": {
+                orderEntity = changeFromCreated(orderEntity, newOrderStatus, userRole);
+                break;
+            }
+            case "PROCESSING": {
+                orderEntity = changeFromProcessing(orderEntity, newOrderStatus, userRole);
+                break;
+            }
+            case "BACKORDERED": {
+                orderEntity = changeFromBackordered(orderEntity, newOrderStatus, userRole);
+                break;
+            }
+            default: {
+                log.debug("cannot change  order status from {} to {} for order with id={}", oldOrderStatusName, newOrderStatusName, orderEntity.getId());
+            }
         }
 
-        return orderEntity2OrderMapper.toOrder(updatedOrderEntity, creator, acceptor);
+        return orderEntity;
     }
+
+    private OrderEntity changeFromCreated(OrderEntity orderEntity,
+                                          StatusOrderEntity newOrderStatus,
+                                          UserRole userRole) {
+        String statusOrderEntityName = orderEntity.getStatus().getName();
+        UUID orderId = orderEntity.getId();
+
+        // check permissions
+        if (userRole == UserRole.ROLE_ADMIN) {
+            log.error("User with role={} cannot change status order with id={} from={} to={}", userRole,
+                    orderEntity.getId(), statusOrderEntityName, newOrderStatus.getName());
+            throw new PermissionDeniedException("CANNOT_CHANGE_STATUS", "User cannot change status order with id=" + orderId);
+        }
+
+        // check new order status
+        if (!newOrderStatus.getName().equals("PROCESSING")) {
+            log.error("Status order with id={} cannot be changed from={} to={}",
+                    orderEntity.getId(), statusOrderEntityName, newOrderStatus.getName());
+            throw new InvalidRequestDataException("INVALID_NEW_STATUS", "Status order with cannot be changed " +
+                    "from=" + statusOrderEntityName + " to=" + newOrderStatus.getName());
+        }
+
+        // set new products statuses
+        List<ProductEntity> productEntities = orderEntity.getProducts();
+        for (ProductEntity productEntity : productEntities) {
+            Optional<StatusProductEntity> statusProduct = statusProductEntityRepository.findByName("PENDING_DELIVERY");
+            if (statusProduct.isEmpty()) {
+                log.error("Not found new product status=PENDING_DELIVERY");
+                throw new NotFoundException("NO_FOUND_NEW_PRODUCT_STATUS", "Not found new product status PENDING_DELIVERY");
+            }
+
+            if (productEntity.getStatus().getName().equals("IN_STOCK")) {
+                productEntity.setStatus(statusProduct.get());
+                productEntityRepository.save(productEntity);
+            }
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        UserEntity currentUserEntity = principal.getUserEntity();
+        orderEntity.setAcceptorId(currentUserEntity.getId());
+
+        // set new order status
+        log.debug("set new order status={} for order={}", newOrderStatus, orderEntity.getId());
+        orderEntity.setStatus(newOrderStatus);
+
+        return orderEntityRepository.save(orderEntity);
+    }
+
+    private OrderEntity changeFromBackordered(OrderEntity orderEntity,
+                                              StatusOrderEntity newOrderStatus,
+                                              UserRole userRole) {
+        String statusOrderEntityName = orderEntity.getStatus().getName();
+        UUID orderId = orderEntity.getId();
+
+        // check permissions
+        if (userRole == UserRole.ROLE_USER) {
+            log.error("User with role={} cannot change status order with id={} from={} to={}", userRole,
+                    orderEntity.getId(), statusOrderEntityName, newOrderStatus.getName());
+            throw new PermissionDeniedException("CANNOT_CHANGE_STATUS", "User cannot change status order with id=" + orderId);
+        }
+
+        // check new order status
+        List<ProductEntity> productEntities = orderEntity.getProducts();
+        if (newOrderStatus.getName().equals("CANCELED")) {
+
+            // all products have status - in stock
+            for (ProductEntity productEntity : productEntities) {
+                Optional<StatusProductEntity> statusProduct = statusProductEntityRepository.findByName("IN_STOCK");
+                if (statusProduct.isEmpty()) {
+                    log.error("Not found new product status=IN_STOCK");
+                    throw new NotFoundException("NO_FOUND_NEW_PRODUCT_STATUS", "Not found new product status IN_STOCK");
+                }
+                productEntity.setStatus(statusProduct.get());
+                productEntityRepository.save(productEntity);
+            }
+            orderEntity.setStatus(newOrderStatus);
+        } else if (newOrderStatus.getName().equals("COMPLETED")) {
+            List<ProductEntity> productEntitiesForRemove = new ArrayList<>();
+            for (ProductEntity productEntity : productEntities) {
+                Optional<StatusProductEntity> statusProductDelivered = statusProductEntityRepository.findByName("DELIVERED");
+                if (statusProductDelivered.isEmpty()) {
+                    log.error("Not found new product status=DELIVERED");
+                    throw new NotFoundException("NO_FOUND_NEW_PRODUCT_STATUS", "Not found new product status DELIVERED");
+                }
+
+                if (!productEntity.isDeleted()) {
+                    productEntity.setStatus(statusProductDelivered.get());
+                    productEntityRepository.save(productEntity);
+                } else {
+                    productEntitiesForRemove.add(productEntity);
+                }
+            }
+
+            String decription = generateDescription(productEntitiesForRemove);
+            orderEntity.setDescription(decription);
+
+            for (ProductEntity productEntity : productEntitiesForRemove) {
+                productEntities.remove(productEntity);
+            }
+
+            // updated products (without deleted products)
+            orderEntity.setProducts(productEntities);
+            orderEntity.setStatus(newOrderStatus);
+        } else {
+            log.error("Status order with id={} cannot be changed from={} to={}",
+                    orderEntity.getId(), statusOrderEntityName, newOrderStatus.getName());
+            throw new InvalidRequestDataException("INVALID_NEW_STATUS", "Status order with cannot be changed " +
+                    "from=" + statusOrderEntityName + " to=" + newOrderStatus.getName());
+        }
+
+        return orderEntityRepository.save(orderEntity);
+    }
+
+    private String generateDescription(List<ProductEntity> productEntities) {
+        if (productEntities.isEmpty())
+            return null;
+        StringBuilder description = new StringBuilder("The order was completed without the following items:");
+        for (ProductEntity productEntity : productEntities) {
+            description.append("{id=").
+                    append(productEntity.getName())
+                    .append("}, name={")
+                    .append(productEntity.getName())
+                    .append("}, cetegory={")
+                    .append(productEntity.getCategory())
+                    .append("},");
+        }
+        return description.toString();
+    }
+
+    private OrderEntity changeFromProcessing(OrderEntity orderEntity,
+                                             StatusOrderEntity newOrderStatus,
+                                             UserRole userRole) {
+
+        String statusOrderEntityName = orderEntity.getStatus().getName();
+        UUID orderId = orderEntity.getId();
+
+        // check permissions
+        if (userRole == UserRole.ROLE_ADMIN) {
+            log.error("User with role={} cannot change status order with id={} from={} to={}", userRole,
+                    orderEntity.getId(), statusOrderEntityName, newOrderStatus.getName());
+            throw new PermissionDeniedException("CANNOT_CHANGE_STATUS", "User cannot change status order with id=" + orderId);
+        }
+
+        List<ProductEntity> productEntities = orderEntity.getProducts();
+        if (newOrderStatus.getName().equals("COMPLETED")) {
+            for (ProductEntity productEntity : productEntities) {
+                Optional<StatusProductEntity> statusProductDelivered = statusProductEntityRepository.findByName("DELIVERED");
+                if (statusProductDelivered.isEmpty()) {
+                    log.error("Not found new product status=DELIVERED");
+                    throw new NotFoundException("NO_FOUND_NEW_PRODUCT_STATUS", "Not found new product status DELIVERED");
+                }
+
+                productEntity.setStatus(statusProductDelivered.get());
+                productEntityRepository.save(productEntity);
+            }
+        } else if (newOrderStatus.getName().equals("BACKORDERED")) {
+            // still old products statuses
+        } else {
+            log.error("Status order with id={} cannot be changed from={} to={}",
+                    orderEntity.getId(), statusOrderEntityName, newOrderStatus.getName());
+            throw new InvalidRequestDataException("INVALID_NEW_STATUS", "Status order with cannot be changed " +
+                    "from=" + statusOrderEntityName + " to=" + newOrderStatus.getName());
+        }
+        orderEntity.setStatus(newOrderStatus);
+
+        return orderEntityRepository.save(orderEntity);
+    }
+
 
     /**
      * Retrieves an order entity by its ID.

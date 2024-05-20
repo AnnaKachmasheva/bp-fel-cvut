@@ -10,15 +10,20 @@
   padding: 100px 0;
 
   .card {
-    height: 20vh;
+    height: auto;
     width: 20vw;
     padding: 20px;
+    cursor: pointer;
 
     display: grid;
 
     border-radius: 6px;
     border: 1px solid $grey-color;
     box-shadow: 0 0 6px $grey-color;
+
+    .subtitle {
+      font-size: 22px;
+    }
 
     p {
       align-self: flex-end;
@@ -34,6 +39,11 @@
       font-size: 3vh;
     }
   }
+
+  .card:hover {
+    box-shadow: 0 0 6px $green-color;
+  }
+
 }
 
 @media (max-width: 768px) {
@@ -52,7 +62,7 @@
     .card {
       width: 90vw;
 
-      padding: 0;
+      padding: 20px;
       margin: 0;
     }
 

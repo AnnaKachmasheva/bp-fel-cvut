@@ -15,6 +15,8 @@ tags:
     description: 'Endpoints related to managing product categories.'
   - name: 'Order'
     description: 'Endpoints related to managing orders, including creation, retrieval, updating, and status change.'
+  - name: 'Statistics'
+    description: 'Endpoints related to managing statistics.'
 paths:
   /auth/registration:
     post:
@@ -601,6 +603,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Category'
+  /statistics:
+    get:
+      tags:
+        - 'Statistics'
+      description: 'Retrieve a ogject of statistcs'
+      operationId: getStatistics
+      responses:
+        '200':
+          description: 'Statistcs retrieved successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics'
 
 components:
   schemas:
@@ -620,6 +635,8 @@ components:
       $ref: 'models/product/model-product.yaml#/Product'
     Status:
       $ref: 'models/product/product-status.yaml#/Status'
+    Statistics:
+      $ref: 'models/statistics/model-statistics.yaml#/Statistics'
     ProductPage:
       type: object
       allOf:

@@ -10,9 +10,10 @@ import {useNavigate} from "react-router-dom";
 import {ModalAddProduct} from "./modal-add-product/ModalAddProduct";
 import {userApi} from "../../services/api";
 import {IoIosMore, IoMdClose} from "react-icons/io";
-import {CiImageOff} from "react-icons/ci";
 import {ModalDeleteProductConfirm} from "./modal-delete-product/ModalDeleteProductConfirm";
 import {ModalUpdateProduct} from "./modal-update-product/ModalUpdateProduct";
+import stylesStorage from "./StoragePage.module.scss";
+import {RiSlideshowView} from "react-icons/ri";
 
 function StoragePage() {
 
@@ -42,6 +43,8 @@ function StoragePage() {
     const [statusesFetched, setStatusesFetched] = useState(false);
     const [statuses, setStatuses] = useState([]);
 
+    const [isMobile, setIsMobile] = useState(false)
+
 
     useEffect(() => {
         fetchCategories().then(() => {
@@ -49,6 +52,9 @@ function StoragePage() {
                 setStatusesFetched(true);
             });
         });
+
+        handleResize()
+        window.addEventListener("resize", handleResize)
     }, []);
 
     useEffect(() => {
@@ -173,6 +179,13 @@ function StoragePage() {
         navigate(`/app/storage/product/${id}`, {state: {product: product, categories: categories, statuses: statuses}});
     }
 
+    const handleResize = () => {
+        if (window.innerWidth < 900) {
+            setIsMobile(true)
+        } else {
+            setIsMobile(false)
+        }
+    }
 
     return (
         <div className={'content'}>
@@ -271,46 +284,59 @@ function StoragePage() {
                         )}
                     </ul>
                 </div>
+                {!isMobile ?
+                    <table>
+                        <thead>
+                        <tr>
+                            <td className={styles.imageColumn}>
+                                IMAGE
+                            </td>
+                            <td>
+                                CATEGORY
+                            </td>
+                            <td>
+                                NAME
+                            </td>
+                            <td>
+                                STATE
+                            </td>
+                            <td>
+                                DESCRIPTION
+                            </td>
+                            <td>
+                                DATE
+                            </td>
+                            <td className={styles.actions}>
+                            </td>
+                        </tr>
+                        </thead>
 
+                        <tbody>
+                        {listProducts.map((product, index) =>
+                            <TableRow product={product}
+                                      key={index}
+                                      categories={categories}
+                                      statuses={statuses}
+                                      handleClick={() => goToProductPage(product)}
+                            />
+                        )}
+                        </tbody>
+                    </table>
+                    :
 
-                <table>
-                    <thead>
-                    <tr>
-                        <td className={styles.imageColumn}>
-                            IMAGE
-                        </td>
-                        <td>
-                            CATEGORY
-                        </td>
-                        <td>
-                            NAME
-                        </td>
-                        <td>
-                            STATE
-                        </td>
-                        <td>
-                            DESCRIPTION
-                        </td>
-                        <td>
-                            DATE
-                        </td>
-                        <td className={styles.actions}>
-                        </td>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {listProducts.map((product, index) =>
-                        <TableRow product={product}
-                                  key={index}
-                                  categories={categories}
-                                  statuses={statuses}
-                                  handleClick={() => goToProductPage(product)}
-                        />
-                    )}
-                    </tbody>
-                </table>
+                    <div className={styles.cards}>
+                        {listProducts.map((product, index) =>
+                            <CardProduct product={product}
+                                         key={index}
+                                         categories={categories}
+                                         statuses={statuses}
+                                         handleClick={() => goToProductPage(product)}
+                            />
+                        )}
+                    </div>
+                }
             </div>
+
 
             <Pagination currentPage={currentPage}
                         totalPages={totalPages}
@@ -376,12 +402,15 @@ class TableRow extends Component {
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.category?.name)}</td>
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.name)}</td>
                 <td onClick={this.props.handleClick}>
-                    {this.props.product.status ?
+                    {this.props.product.isDeleted ?
+                        <span className={"deleted ".concat(stylesStorage.status)}>
+                            Deleted
+                        </span> :
                         <span className={this.props.product.status.name.toLowerCase()
                             .concat(" ")
                             .concat(styles.status)}>
                          {showStatus(this.props.product.status.name)}
-                    </span> : "undefined"
+                        </span>
                     }
                 </td>
                 <td onClick={this.props.handleClick}>{showValue(this.props.product?.description)}</td>
@@ -395,6 +424,58 @@ class TableRow extends Component {
                     </ul>
                 </td>
             </tr>
+        )
+    }
+}
+
+class CardProduct extends Component {
+
+    render() {
+        // const {showConfirmDeleteProduct} = this.state;
+        // const {showUpdateProduct} = this.state;
+
+        return (
+            <div className={styles.productCard.concat(" ").concat(this.props.product?.isDeleted ? 'deleted-item' : '')}>
+
+                {/*<ModalDeleteProductConfirm onClose={() => this.setState({showConfirmDeleteProduct: false})}*/}
+                {/*                           show={showConfirmDeleteProduct}*/}
+                {/*                           product={this.props.product}/>*/}
+
+                {/*<ModalUpdateProduct onClose={() => this.setState({showUpdateProduct: false})}*/}
+                {/*                    show={showUpdateProduct}*/}
+                {/*                    product={this.props.product}*/}
+                {/*                    categories={this.props.categories}*/}
+                {/*                    statuses={this.props.statuses}/>*/}
+
+                <img src={this.props.product?.image} alt="Image not found"/>
+                <span className={styles.category}>
+                        [{showValue(this.props.product?.category?.name)}]
+                    </span>
+                <h5>{showValue(this.props.product?.name)}</h5>
+
+                <p>
+                    {this.props.product.isDeleted ?
+                        <span className={"deleted ".concat(stylesStorage.status)}>
+                            Deleted
+                        </span> :
+                        <span className={this.props.product.status.name.toLowerCase()
+                            .concat(" ")
+                            .concat(styles.status)}>
+                         {showStatus(this.props.product.status.name)}
+                        </span>
+                    }
+                </p>
+                <p>{showValue(this.props.product?.description)}</p>
+                <p>{formatDatetime(this.props.product?.updatedAt)}</p>
+
+                <Button onClick={this.props.handleClick}
+                        type={ButtonType[2].type}
+                        size={ButtonSize[1].size}
+                        isIconEnd={true}
+                        icon={<RiSlideshowView/>}
+                        label={'Show product'}/>
+
+            </div>
         )
     }
 }

@@ -1,26 +1,18 @@
 import React from "react";
 import ModalWindow from "../../../components/modal/ModalWindow";
 import Button, {ButtonSize, ButtonType} from "../../../components/button/Button";
-import {userApi} from "../../../services/api";
 import {QrReader} from "react-qr-reader";
 import styles from "../../scan-page/ScanPage.module.scss";
+import {decodeData} from "../../../utils/Common";
 
 
 export const ModalScanCode = (props) => {
+
     if (!props.show)
         return null;
 
-    const handleDeleteOrder = async () => {
-        try {
-            const orderId = props.orderId;
-            await userApi.deleteOrder(orderId);
-            window.location.reload();
-        } catch (error) {
-            console.log('error - delete order')
-        }
-    }
-
     const stopScan = () => {
+        props.scanedCode('')
         props.onClose(true);
     }
 
@@ -28,30 +20,58 @@ export const ModalScanCode = (props) => {
         props.scanedCode(code);
     }
 
+    const handleRescan = () => {
+        props.rescan();
+    }
+
+    const isValid = () => {
+        if (props.product.id === decodeData(props.code)) {
+            props.addProductToScanned();
+            stopScan();
+        }
+        return false;
+    }
 
     function getContent() {
         return (
             <div className={'modal-window-body'}>
 
-                <QrReader
-                    className={styles.qrReader}
-                    constraints={{facingMode: 'environment'}}
-                    videoStyle={{height: '100%'}}
-                    onResult={(result, error) => {
-                        if (!!result) {
-                            handleScan(result?.text);
-                        }
-                        if (!!error) {
-                            console.info(error);
-                        }
-                    }}
-                />
+                {props.code ?
+                    <div>
+                        {isValid() ?
+                            null :
+                            <div>
+                                <p className={styles.title}>Product
+                                    <span className={styles.productName}> {props.product.name}</span>
+                                    has another QR code
+                                </p>
+                                <Button type={ButtonType[2].type}
+                                        size={ButtonSize[1].size}
+                                        onClick={handleRescan}
+                                        label={'Rescan'}/>
+                            </div>}
+                    </div>
+                    :
 
+                    <QrReader
+                        className={styles.qrReader}
+                        constraints={{facingMode: 'environment'}}
+                        videoStyle={{height: '100%'}}
+                        onResult={(result, error) => {
+                            if (!!result) {
+                                handleScan(result?.text);
+                            }
+                            if (!!error) {
+                                console.info(error);
+                            }
+                        }}
+                    />
+                }
                 <div className={styles.Button}>
-                    <Button type={ButtonType[4].type}
+                    <Button type={ButtonType[1].type}
                             size={ButtonSize[1].size}
                             onClick={stopScan}
-                            label={'Stop'}/>
+                            label={'Cancel'}/>
                 </div>
             </div>
         )
@@ -59,7 +79,7 @@ export const ModalScanCode = (props) => {
 
     return (
         <ModalWindow show={props.show}
-                     title={"Scan code"}
+                     title={props.code ? "Scan result" : "Scan code"}
                      content={getContent()}/>
     )
 }
