@@ -11,19 +11,11 @@ import {Outlet, Route} from "react-router-dom";
 import {isAdmin, isUser} from "../services/auth";
 import OrdersPage from "../pages/orders-page/OrdersPage";
 import OrderPage from "../pages/order-page/OrderPage";
-import HomePage from "../pages/home-page/HomePage";
 import LogoutPage from "../pages/logout-page/LogoutPage";
 import StoragePage from "../pages/storage-page/StoragePage";
 
 
 export const privateRoutes = [
-    {
-        path: "app/home",
-        main: () => <BasicPage page={<HomePage/>}
-                               title={PageTitles.HOME}
-                               showSideBar={true}
-                               isAuth={true}/>
-    },
     {
         path: "app/orders",
         main: () => <BasicPage page={<OrdersPage/>}
@@ -114,7 +106,7 @@ function PrivateRoutes() {
         <Outlet>
             {privateRoutes.map((route, index) => {
                 if ((isUser() && [
-                        'app/home',
+                        'app/profile',
                         'app/orders',
                         'app/order/:id',
                         'app/scan'].includes(route.path)) ||

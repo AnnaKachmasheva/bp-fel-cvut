@@ -224,6 +224,7 @@ ul {
   button {
     width: 200px;
   }
+
 }
 
 .iconHelp {
@@ -271,5 +272,21 @@ ul {
 p {
   span {
     font-weight: bolder;
+  }
+}
+
+.mainInfoOrder {
+  padding: 20px;
+}
+
+@media (max-width: 420px) {
+  .buttons {
+    gap: 20px;
+
+    button {
+      width: 90vw;
+      margin: 0 auto;
+    }
+
   }
 }

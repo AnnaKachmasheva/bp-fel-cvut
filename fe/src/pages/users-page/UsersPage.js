@@ -6,7 +6,7 @@ import Button, {ButtonSize, ButtonType} from "../../components/button/Button";
 import {userApi} from "../../services/api";
 import {ModalDeleteProfileConfirm} from "../profile-page/modal-delete-user/ModalDeleteProfileConfirm";
 import {ModalEditProfile} from "../profile-page/modal-edit-user/ModalEditProfile";
-import {formatDatetime} from "../../utils/Common";
+import {formatDatetime, showValue} from "../../utils/Common";
 import {FiPlus} from "react-icons/fi";
 import {ModalAddUser} from "./modal-add-user/ModalAddUser";
 import {FaArrowDown, FaArrowUp} from "react-icons/fa";
@@ -34,9 +34,14 @@ function UsersPage() {
     ]
     const [selectedOptionSort, setSelectedOptionSort] = useState(sortOptions[0].key);
     const [isUp, setIsUp] = useState(false);
+    const [isMobile, setIsMobile] = useState(false)
+
 
     useEffect(() => {
         fetchUsers().then();
+
+        handleResize()
+        window.addEventListener("resize", handleResize)
     }, [totalPages, countElements, currentPage]);
 
     const handlePageChange = (pageNumber) => {
@@ -82,6 +87,14 @@ function UsersPage() {
             }
         }
         return null;
+    }
+
+    const handleResize = () => {
+        if (window.innerWidth < 900) {
+            setIsMobile(true)
+        } else {
+            setIsMobile(false)
+        }
     }
 
     return (
@@ -131,44 +144,57 @@ function UsersPage() {
                         <h4>Users: <span>{totalElements}</span></h4>
                     </div>
                 </div>
-                <table>
-                    <thead>
-                    <tr>
-                        <td>
-                            <div className={'table-header-cell'}>
-                                USER
-                            </div>
-                        </td>
-                        <td>
-                            <div className={'table-header-cell'}>
-                                ROLE
-                            </div>
-                        </td>
-                        <td>
-                            LAST UPDATED
-                        </td>
-                        <td>
-                            ACTIVITIES
-                        </td>
-                    </tr>
-                    </thead>
 
-                    <tbody>
-                    {listUsers.map((user) =>
-                        <TableRow user={user}/>
-                    )}
-                    </tbody>
-                </table>
+                {!isMobile ?
+                    <table>
+                        <thead>
+                        <tr>
+                            <td>
+                                <div className={'table-header-cell'}>
+                                    USER
+                                </div>
+                            </td>
+                            <td>
+                                <div className={'table-header-cell'}>
+                                    ROLE
+                                </div>
+                            </td>
+                            <td>
+                                LAST UPDATED
+                            </td>
+                            <td>
+                                ACTIVITIES
+                            </td>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {listUsers.map((user) =>
+                            <TableRow user={user}
+                                      key={user}/>
+                        )}
+                        </tbody>
+                    </table>
+                    :
+                    <div className={styles.cards}>
+                        {listUsers.map((user, index) =>
+                            <CardUser user={user}
+                                      key={index}
+                            />
+                        )}
+                    </div>
+                }
+
+                <Pagination currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                            countElements={countElements}
+                            changeCountElemnts={handleChangeCountElements}
+                            name={'users'}/>
+
             </div>
-
-            <Pagination currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                        countElements={countElements}
-                        changeCountElemnts={handleChangeCountElements}
-                        name={'users'}/>
-
         </div>
+
     )
 }
 
@@ -237,5 +263,74 @@ class TableRow extends Component {
         )
     }
 }
+
+class CardUser extends Component {
+
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            showConfirmDeleteModal: false,
+            showUpdateUserModal: false
+        };
+    }
+
+    handleUpdate = () => {
+        this.setState(() => ({
+            showUpdateUserModal: true,
+        }));
+    }
+
+    handleDelete = () => {
+        this.setState(() => ({
+            showConfirmDeleteModal: true,
+        }));
+    }
+
+    render() {
+        const {showConfirmDeleteModal} = this.state;
+        const {showUpdateUserModal} = this.state;
+
+        return (
+            <div className={(this.props.user?.isDeleted ? 'deleted-item ' : ' ').concat(styles.productCard)}>
+
+                <ModalDeleteProfileConfirm onClose={() => this.setState({showConfirmDeleteModal: false})}
+                                           show={showConfirmDeleteModal}
+                                           user={this.props.user}/>
+
+                <ModalEditProfile onClose={() => this.setState({showUpdateUserModal: false})}
+                                  show={showUpdateUserModal}
+                                  user={this.props.user}/>
+
+                <h5>{showValue(this.props.user?.firstName)} {showValue(this.props.user?.lastName)}</h5>
+
+                <p>{showValue(this.props.user?.email)}</p>
+                <p>{this.props.user.userRole}</p>
+                <p>{formatDatetime(this.props.user?.updated)}</p>
+
+                <div className={'buttons-container'}>
+                    <Button type={ButtonType[3].type}
+                            size={ButtonSize[0].size}
+                            label={'Edit'}
+                            onClick={this.handleUpdate}
+                            isIconStart={true}
+                            icon={<HiOutlinePencilAlt/>}/>
+
+                    {this.props.user.isDeleted ? null
+                        : <Button type={ButtonType[5].type}
+                                  size={ButtonSize[0].size}
+                                  label={'Delete'}
+                                  onClick={this.handleDelete}
+                                  isIconStart={true}
+                                  icon={<RiDeleteBinLine/>}/>
+                    }
+
+                </div>
+
+            </div>
+        )
+    }
+}
+
 
 export default UsersPage;

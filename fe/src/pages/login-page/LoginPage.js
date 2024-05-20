@@ -66,7 +66,7 @@ function LoginPage() {
             return <Navigate replace to="/app/dashboard"/>;
         }
         if (isUser()) {
-            return <Navigate replace to="/app/home"/>;
+            return <Navigate replace to="/app/orders"/>;
         }
     }
 

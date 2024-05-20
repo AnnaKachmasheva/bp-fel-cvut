@@ -49,7 +49,7 @@ export const ModalAddUser = (props) => {
             setErrorFromServer('');
 
             const email = e.email;
-            const userRole = e.userRole;
+            const userRole = e.userRole || UserRole.USER;
             const password = e.password;
             const firstName = e.firstName;
             const lastName = e.lastName;
@@ -66,7 +66,8 @@ export const ModalAddUser = (props) => {
             if (response && response.error && response.error.message) {
                 setErrorFromServer(response.error.message);
             } else {
-                props.onClose(true)
+                props.onClose(true);
+                window.location.reload();
             }
         }
 

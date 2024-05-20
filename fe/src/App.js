@@ -7,6 +7,7 @@ import BasicPage from "./pages/BasicPage";
 import {PageTitles} from "./utils/Constants";
 import ProductPage from "./pages/product-page/ProductPage";
 import PrivateRoutes, {privateRoutes} from "./routes/PrivateRoutes";
+import {isAdmin} from "./services/auth";
 
 function App() {
 
@@ -25,7 +26,9 @@ function App() {
                            path="app/product/:id"
                            element={<BasicPage page={<ProductPage/>}
                                                title={PageTitles.STORAGE}/>}/>
-                    <Route path="/" element={<Navigate replace to="app/dashboard"/>}/>
+                    <Route path="/" element={isAdmin() ?
+                        <Navigate replace to="app/dashboard"/> :
+                        <Navigate replace to="app/orders"/>}/>
                 </Route>
                 {publicRoutes.map(({path, main}) => (
                     <Route key={path}

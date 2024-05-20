@@ -5,10 +5,10 @@ import {isAdmin, isUser} from "../../services/auth";
 import styles from "../storage-page/StoragePage.module.scss";
 import stylesStorage from "../storage-page/StoragePage.module.scss";
 import {CiImageOff} from "react-icons/ci";
-import {showStatus, showValue} from "../../utils/Common";
+import {formatDatetime, showStatus, showValue} from "../../utils/Common";
 import {FaCheck, FaPen} from "react-icons/fa";
 import {MdChecklistRtl, MdDeleteOutline, MdOutlineCancel} from "react-icons/md";
-import {RiDeleteBinLine, RiListCheck3} from "react-icons/ri";
+import {RiDeleteBinLine, RiListCheck3, RiSlideshowView} from "react-icons/ri";
 import {userApi} from "../../services/api";
 import {BsQuestionCircle} from "react-icons/bs";
 import {GiBackwardTime} from "react-icons/gi";
@@ -40,9 +40,14 @@ function OrderPage() {
     const [scannedProducts, setScannedProducts] = useState([]);
 
     const [selectedProduct, setSelectedProduct] = useState("");
+    const [isMobile, setIsMobile] = useState(false)
+
 
     useEffect(() => {
         fetchOrder().then();
+
+        handleResize()
+        window.addEventListener("resize", handleResize)
     }, []);
 
     const fetchOrder = async () => {
@@ -100,7 +105,7 @@ function OrderPage() {
     };
 
     const completeWithoutMissingItems = () => {
-       changeStatus("COMPLETED")
+        changeStatus("COMPLETED")
     };
 
     const changeStatus = (status) => {
@@ -128,6 +133,14 @@ function OrderPage() {
         }
     }
 
+    const handleResize = () => {
+        if (window.innerWidth < 900) {
+            setIsMobile(true)
+        } else {
+            setIsMobile(false)
+        }
+    }
+
 
     return (
         <div className={'content'}>
@@ -150,68 +163,83 @@ function OrderPage() {
                            rescan={() => setScannedCode('')}
                            addProductToScanned={addProductToScanned}/>
 
-            <h3>{id}</h3>
+            <div className={styles.mainInfoOrder}>
+                <h3>{id}</h3>
 
-            <span className={styles.error}>{errorFromServer}</span>
+                <span className={styles.error}>{errorFromServer}</span>
 
-            <h1 className={'form-title '}>
+                <h1 className={'form-title '}>
                 <span className={orderStatus.toLowerCase()
                     .concat(" ")
                     .concat(styles.status)}>
                     {orderStatus.toLowerCase()}
                 </span>
-            </h1>
+                </h1>
 
-            {(isSomeDeletedProducts && isUser()) ?
-                <span className={styles.errorMessage}>
+                {(isSomeDeletedProducts && isUser()) ?
+                    <span className={styles.errorMessage}>
                     Some products have been deleted, please postpone this order.
                     It cannot be completed.
                 </span> : null}
 
-            {(isSomeDeletedProducts && isAdmin()) ?
-                <span className={styles.errorMessage}>
+                {(isSomeDeletedProducts && isAdmin()) ?
+                    <span className={styles.errorMessage}>
                     Some products have been removed, please check this order.
                 </span> : null}
 
-            <p>{order?.description}</p>
+                <p>{order?.description}</p>
 
-            <p><span>Admin creator:</span> {order?.creator?.firstName} {order?.creator?.lastName}</p>
-            <p><span>User acceptor:</span> {order?.acceptor?.firstName} {order?.acceptor?.lastName}</p>
-            <p><span>Created:</span> {order?.createdAt}</p>
-            <p><span>Last updated:</span> {order?.updatedAt}</p>
+                <p><span>Admin creator:</span> {order?.creator?.firstName} {order?.creator?.lastName}</p>
+                <p><span>User acceptor:</span> {order?.acceptor?.firstName} {order?.acceptor?.lastName}</p>
+                <p><span>Created:</span> {order?.createdAt}</p>
+                <p><span>Last updated:</span> {order?.updatedAt}</p>
+
+            </div>
 
             <h5>Products</h5>
-            <table>
-                <thead>
-                <tr>
-                    <td className={styles.imageColumn}>
-                        IMAGE
-                    </td>
-                    <td>
-                        CATEGORY
-                    </td>
-                    <td>
-                        NAME
-                    </td>
-                    <td>
-                        STATE
-                    </td>
-                    <td>
-                        DESCRIPTION
-                    </td>
-                </tr>
-                </thead>
 
-                <tbody>
-                {products.map((product, index) =>
-                    <TableRow product={product}
-                              key={index}
-                              isProductAlreadySelected={isProductAlreadySelected(product)}
-                              handleClick={() => handleClickProduct(product)}
-                    />
-                )}
-                </tbody>
-            </table>
+            {!isMobile ?
+                <table>
+                    <thead>
+                    <tr>
+                        <td className={styles.imageColumn}>
+                            IMAGE
+                        </td>
+                        <td>
+                            CATEGORY
+                        </td>
+                        <td>
+                            NAME
+                        </td>
+                        <td>
+                            STATE
+                        </td>
+                        <td>
+                            DESCRIPTION
+                        </td>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {products.map((product, index) =>
+                        <TableRow product={product}
+                                  key={index}
+                                  isProductAlreadySelected={isProductAlreadySelected(product)}
+                                  handleClick={() => handleClickProduct(product)}
+                        />
+                    )}
+                    </tbody>
+                </table>
+                : <div className={styles.cards}>
+                    {products.map((product, index) =>
+                        <CardProduct product={product}
+                                     key={index}
+                                     isProductAlreadySelected={isProductAlreadySelected(product)}
+                                     handleClick={() => handleClickProduct(product)}
+                        />
+                    )}
+                </div>
+            }
 
 
             <div className={styles.buttons}>
@@ -270,7 +298,7 @@ function OrderPage() {
                     : null
                 }
 
-                {!admin && ((orderStatus === 'PROCESSING'))  ?
+                {!admin && ((orderStatus === 'PROCESSING')) ?
                     <Button onClick={() => changeStatus("BACKORDERED")}
                             type={ButtonType[0].type}
                             size={ButtonSize[1].size}
@@ -371,6 +399,58 @@ class TableRow extends Component {
                     </td>
                     : null}
             </tr>
+        )
+    }
+}
+
+class CardProduct extends Component {
+
+    render() {
+        // const {showConfirmDeleteProduct} = this.state;
+        // const {showUpdateProduct} = this.state;
+
+        return (
+            <div className={styles.productCard.concat(" ").concat(this.props.product?.isDeleted ? 'deleted-item' : '')}>
+
+                {/*<ModalDeleteProductConfirm onClose={() => this.setState({showConfirmDeleteProduct: false})}*/}
+                {/*                           show={showConfirmDeleteProduct}*/}
+                {/*                           product={this.props.product}/>*/}
+
+                {/*<ModalUpdateProduct onClose={() => this.setState({showUpdateProduct: false})}*/}
+                {/*                    show={showUpdateProduct}*/}
+                {/*                    product={this.props.product}*/}
+                {/*                    categories={this.props.categories}*/}
+                {/*                    statuses={this.props.statuses}/>*/}
+
+                <img src={this.props.product?.image} alt="Image not found"/>
+                <span className={styles.category}>
+                        [{showValue(this.props.product?.category?.name)}]
+                    </span>
+                <h5>{showValue(this.props.product?.name)}</h5>
+
+                <p>
+                    {this.props.product.isDeleted ?
+                        <span className={"deleted ".concat(stylesStorage.status)}>
+                            Deleted
+                        </span> :
+                        <span className={this.props.product.status.name.toLowerCase()
+                            .concat(" ")
+                            .concat(styles.status)}>
+                         {showStatus(this.props.product.status.name)}
+                        </span>
+                    }
+                </p>
+                <p>{showValue(this.props.product?.description)}</p>
+                <p>{formatDatetime(this.props.product?.updatedAt)}</p>
+
+                <Button onClick={this.props.handleClick}
+                        type={ButtonType[2].type}
+                        size={ButtonSize[1].size}
+                        isIconEnd={true}
+                        icon={<RiSlideshowView/>}
+                        label={'Show product'}/>
+
+            </div>
         )
     }
 }

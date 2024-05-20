@@ -12,6 +12,7 @@ import {ModalDeleteProductConfirm} from "../storage-page/modal-delete-product/Mo
 import {ModalUpdateProduct} from "../storage-page/modal-update-product/ModalUpdateProduct";
 import {formatDatetime, showValue} from "../../utils/Common";
 import {ModalAddOrder} from "./modal-add-order/ModalAddOrder";
+import {RiSlideshowView} from "react-icons/ri";
 
 
 function OrdersPage() {
@@ -44,13 +45,16 @@ function OrdersPage() {
     const [statusesFetched, setStatusesFetched] = useState(false);
     const [statuses, setStatuses] = useState([]);
 
-    const [isNewOrder, setIsNewOrder] = useState(false);
+    const [isMobile, setIsMobile] = useState(false)
 
 
     useEffect(() => {
         fetchOrderStatuses().then(() => {
             setStatusesFetched(true);
         });
+        handleResize()
+        window.addEventListener("resize", handleResize)
+
     }, []);
 
     useEffect(() => {
@@ -186,6 +190,14 @@ function OrdersPage() {
 
     }
 
+    const handleResize = () => {
+        if (window.innerWidth < 900) {
+            setIsMobile(true)
+        } else {
+            setIsMobile(false)
+        }
+    }
+
     return (
         <div className={'content'}>
 
@@ -284,41 +296,51 @@ function OrdersPage() {
                     </ul>
                 </div>
 
+                {!isMobile ?
+                    <table>
+                        <thead>
+                        <tr>
+                            <td>
+                                NUMBER
+                            </td>
+                            <td>
+                                CREATION DATE
+                            </td>
+                            <td>
+                                DATE OF LAST UPDATE
+                            </td>
+                            <td>
+                                STATE
+                            </td>
+                            {/*<td>*/}
+                            {/*    DESCRIPTION*/}
+                            {/*</td>*/}
+                            <td className={styles.actions}>
 
-                <table>
-                    <thead>
-                    <tr>
-                        <td>
-                            NUMBER
-                        </td>
-                        <td>
-                            CREATION DATE
-                        </td>
-                        <td>
-                            DATE OF LAST UPDATE
-                        </td>
-                        <td>
-                            STATE
-                        </td>
-                        {/*<td>*/}
-                        {/*    DESCRIPTION*/}
-                        {/*</td>*/}
-                        <td className={styles.actions}>
+                            </td>
 
-                        </td>
+                        </tr>
+                        </thead>
 
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {listOrders.map((order, index) =>
-                        <TableRow order={order}
-                                  key={index}
-                                  handleClick={() => handleGoToOrderPage(order)}
-                        />
-                    )}
-                    </tbody>
-                </table>
+                        <tbody>
+                        {listOrders.map((order, index) =>
+                            <TableRow order={order}
+                                      key={index}
+                                      handleClick={() => handleGoToOrderPage(order)}
+                            />
+                        )}
+                        </tbody>
+                    </table>
+                    :
+                    <div className={styles.cards}>
+                        {listOrders.map((order, index) =>
+                            <CardOrder order={order}
+                                       key={index}
+                                       handleClick={() => handleGoToOrderPage(order)}
+                            />
+                        )}
+                    </div>
+                }
             </div>
 
             <Pagination currentPage={currentPage}
@@ -399,6 +421,36 @@ class TableRow extends Component {
                     </ul>
                 </td>
             </tr>
+        )
+    }
+}
+
+class CardOrder extends Component {
+
+    render() {
+
+        return (
+            <div className={styles.productCard.concat(" ").concat(this.props.product?.isDeleted ? 'deleted-item' : '')}>
+
+                <span>{showValue(this.props.order?.id)}</span>
+                <p>
+                    <span className={this.props.order.status.name.toLowerCase()
+                        .concat(" ")
+                        .concat(styles.status)}>
+                    {this.props.order.status.name.toLowerCase()}
+                    </span>
+                </p>
+                <p>{formatDatetime(this.props.order?.createdAt)}</p>
+                <p>{formatDatetime(this.props.order?.updatedAt)}</p>
+
+                <Button onClick={this.props.handleClick}
+                        type={ButtonType[2].type}
+                        size={ButtonSize[1].size}
+                        isIconEnd={true}
+                        icon={<RiSlideshowView/>}
+                        label={'Show order'}/>
+
+            </div>
         )
     }
 }

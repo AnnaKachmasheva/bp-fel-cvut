@@ -52,16 +52,16 @@ const Sidebar = (props) => {
 
     const sidebarUserRows = [
         {
-            linkText: PageTitles.HOME,
-            link: "/home"
-        },
-        {
             linkText: PageTitles.SCAN,
             link: "/scan"
         },
         {
             linkText: PageTitles.ORDERS,
             link: "/orders"
+        },
+        {
+            linkText: PageTitles.PROFILE,
+            link: "/profile"
         },
         {
             linkText: PageTitles.LOGOUT,
@@ -72,7 +72,7 @@ const Sidebar = (props) => {
 
     function handleClickLogo() {
         if (isUser()) {
-            navigate("/app/home")
+            navigate("/app/orders")
         }
         if (isAdmin()) {
             navigate("/app/dashboard")
