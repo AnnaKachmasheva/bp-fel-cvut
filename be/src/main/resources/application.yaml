@@ -37,7 +37,8 @@ azure:
     container: product-image
 
 server:
-  port: 8005
+#  port: 8005
+  port: 5000
   error:
     include-message: always
 #
