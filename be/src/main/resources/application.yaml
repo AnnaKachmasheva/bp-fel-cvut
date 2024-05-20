@@ -8,24 +8,24 @@ spring:
   datasource:
     user:
       # for development
-      jdbc-url: jdbc:postgresql://localhost:5432/user_db
-      username: admin
-      password: admin
+#      jdbc-url: jdbc:postgresql://localhost:5432/user_db
+#      username: admin
+#      password: admin
       # for production
-    # jdbc-url: jdbc:postgresql://qingen.postgres.database.azure.com:5432/userDB
-    # username: postgres
-    # password: Disciples1%
-    #  driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://qingen.postgres.database.azure.com:5432/userDB
+      username: postgres
+      password: Disciples1%
+      driver-class-name: org.postgresql.Driver
     product:
       # for development
-      jdbc-url: jdbc:postgresql://localhost:5433/product_db
-      username: admin
-      password: admin
+#      jdbc-url: jdbc:postgresql://localhost:5433/product_db
+#      username: admin
+#      password: admin
       # for production
-      # jdbc-url: jdbc:postgresql://qingen.postgres.database.azure.com:5432/productDB
-     # username: postgres
-     # password: Disciples1%
-     # driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://qingen.postgres.database.azure.com:5432/productDB
+      username: postgres
+      password: Disciples1%
+      driver-class-name: org.postgresql.Driver
 
 logging:
   level:

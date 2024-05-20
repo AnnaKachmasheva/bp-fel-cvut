@@ -33,7 +33,8 @@ public class ProductDatasourceConfiguration {
     @Bean(name = "productDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.product")
     public DataSource productDataSource() {
-        return DataSourceBuilder.create().build();
+        return DataSourceBuilder.create()
+                .build();
     }
 
     @Bean(name = "productEntityManagerFactory")
