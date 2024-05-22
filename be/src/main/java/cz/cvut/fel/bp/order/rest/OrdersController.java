@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -20,8 +19,6 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(origins = "https://master.d3f81l92tk91tc.amplifyapp.com", maxAge = 3600)
-//@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class OrdersController implements OrdersApi {
 
     private final OrdersService ordersService;
@@ -29,7 +26,7 @@ public class OrdersController implements OrdersApi {
     @Override
     public ResponseEntity<OrderPage> getOrders(List<Status> statuses,
                                                Pageable pageable) {
-        log.info("Get all orders. Pageable={}. Statuses={}", pageable,statuses);
+        log.info("Get all orders. Pageable={}. Statuses={}", pageable, statuses);
 
         return ResponseEntity.ok(ordersService.getAllOrders(pageable, statuses));
     }

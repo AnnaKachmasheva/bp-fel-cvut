@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -21,8 +20,6 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(origins = "https://master.d3f81l92tk91tc.amplifyapp.com", maxAge = 3600)
-//@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class UsersController implements UsersApi {
 
     private final UsersService usersService;

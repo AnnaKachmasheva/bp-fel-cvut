@@ -37,10 +37,17 @@ azure:
     container: product-image
 
 server:
-#  port: 8005
-  port: 5000
+  port: 8005
+#  port: 5000
   error:
     include-message: always
+
+cors:
+  allowed:
+    origins: "https://master.d3f81l92tk91tc.amplifyapp.com,http://localhost:3000"
+  max:
+    age: 3600
+
 #
 #sql:
 #  init:
